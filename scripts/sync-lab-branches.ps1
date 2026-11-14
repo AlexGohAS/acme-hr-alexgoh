@@ -14,6 +14,7 @@ foreach ($b in $branches) {
   if ($LASTEXITCODE -ne 0) { throw "push of $b failed" }
   Write-Host "  synced $b"
 }
+git remote remove template
 git fetch --quiet --prune origin
 git checkout --quiet main
 git reset --quiet --hard origin/main
