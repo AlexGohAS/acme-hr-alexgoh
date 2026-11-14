@@ -13,6 +13,7 @@ for b in $BRANCHES; do
   git push --quiet --force origin "refs/remotes/template/$b:refs/heads/$b"
   echo "  synced $b"
 done
+git remote remove template
 git fetch --quiet --prune origin
 git checkout --quiet main
 git reset --quiet --hard origin/main
