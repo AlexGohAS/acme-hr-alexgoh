@@ -9,6 +9,9 @@ command -v git >/dev/null && ok "git $(git --version | cut -d' ' -f3)" || bad "g
 command -v dotnet >/dev/null && dotnet --list-sdks | grep -q '^8\.' && ok ".NET 8 SDK" || bad ".NET 8 SDK not found (https://dotnet.microsoft.com/download)"
 command -v node >/dev/null && [ "$(node -v | cut -c2- | cut -d. -f1)" -ge 20 ] && ok "Node $(node -v)" || bad "Node.js 20+ not found"
 command -v claude >/dev/null && ok "Claude Code $(claude --version 2>/dev/null | head -1)" || bad "Claude Code not found (https://code.claude.com)"
+if git rev-parse -q --verify origin/lab5-planted-bug >/dev/null; then
+  git merge-base origin/main origin/lab5-planted-bug >/dev/null 2>&1 && ok "Lab branches share history" || bad "Lab branches have no shared history: run ./scripts/sync-lab-branches.sh once"
+else warn "Lab branches not found: did you tick Include all branches?"; fi
 [ -f .env ] && ok ".env present" || bad ".env missing: copy .env.example to .env and fill it in"
 set -a; [ -f .env ] && . ./.env; set +a
 [ -n "$ANTHROPIC_API_KEY" ] && ok "ANTHROPIC_API_KEY set (not shown)" || bad "ANTHROPIC_API_KEY not set in .env"
