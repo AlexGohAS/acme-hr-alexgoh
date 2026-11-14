@@ -8,6 +8,10 @@ if (Get-Command git -ErrorAction SilentlyContinue) { Ok "git" } else { Bad "git 
 if ((Get-Command dotnet -ErrorAction SilentlyContinue) -and (dotnet --list-sdks | Select-String '^8\.')) { Ok ".NET 8 SDK" } else { Bad ".NET 8 SDK not found" }
 if (Get-Command node -ErrorAction SilentlyContinue) { $v = [int]((node -v).TrimStart('v').Split('.')[0]); if ($v -ge 20) { Ok "Node $(node -v)" } else { Bad "Node.js 20+ needed" } } else { Bad "Node.js not found" }
 if (Get-Command claude -ErrorAction SilentlyContinue) { Ok "Claude Code" } else { Bad "Claude Code not found" }
+if (git rev-parse -q --verify origin/lab5-planted-bug) {
+  git merge-base origin/main origin/lab5-planted-bug *> $null
+  if ($LASTEXITCODE -eq 0) { Ok "Lab branches share history" } else { Bad "Lab branches have no shared history: run .\scripts\sync-lab-branches.ps1 once" }
+} else { Warn "Lab branches not found: did you tick Include all branches?" }
 if (Test-Path .env) {
   Ok ".env present"
   Get-Content .env | Where-Object { $_ -match '^\s*[^#].*=' } | ForEach-Object { $k,$v = $_ -split '=',2; [Environment]::SetEnvironmentVariable($k.Trim(), $v.Trim(), 'Process') }
