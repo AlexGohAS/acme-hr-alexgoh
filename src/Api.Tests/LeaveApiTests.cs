@@ -9,7 +9,7 @@ public class LeaveApiTests(ApiFactory api) : IClassFixture<ApiFactory>
     static object FiveDays(int week) => new { startDate = Monday(week), endDate = Monday(week).AddDays(4), halfDay = "None", reason = "Trip" };
     static DateOnly Monday(int week)
     {
-        var d = new DateOnly(DateTime.UtcNow.Year + 1, 1, 5).AddDays(7 * week);
+        var d = Api.Data.Seed.MondayOnOrAfter(new DateOnly(DateTime.UtcNow.Year + 1, 1, 5)).AddDays(7 * week);
         while (d.DayOfWeek != DayOfWeek.Monday) d = d.AddDays(1);
         return d;
     }
