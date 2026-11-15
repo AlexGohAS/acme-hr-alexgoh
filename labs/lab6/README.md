@@ -11,7 +11,7 @@
 - Cost: one ExtractScore run is up to 40 Claude calls (20 documents × up to 2 attempts). PDFs cost more than plain text, because every page is also read as an image.
 
 ## Steps
-6.1 `git checkout lab6-start`, then `git checkout -b lab6-work`. Stop the API, run `dotnet test`: 5 extractor tests fail.
+6.1 `git checkout lab6-start`, then `git switch --no-track -c lab6-work`. (`--no-track` stops a bare `git push` from going to `lab6-start` or `main`.) Stop the API, run `dotnet test`: 5 extractor tests fail.
 
 6.2 Read `docs/feature-spec-documents.md`, `src/Api/Documents/DocumentExtractor.cs` and `DocumentValidator.cs`. Switch to plan mode, paste **Finish the extractor**, review the plan, then let it build.
 
@@ -21,7 +21,7 @@
 
 6.5 With the API and web app running locally: as Farah, upload sample `08-mc.pdf` on **Documents**. Sign in as Dina (`dina.ismail4@acme-hr.example`, HR) and open **Review**: it lists only documents that need a person (try 08, 10, 17, 19 or 20; a Valid document does not appear). Open the PDF from the row and compare. Farah cannot open Review.
 
-6.6 Commit, push `lab6-work`, open a pull request to `main`. The gates from Lab 5 apply: merge when both checks are green, then check the deploy printed a `dep-` id.
+6.6 Commit, push with `git push -u origin lab6-work`, open a pull request to `main`. The gates from Lab 5 apply: merge when both checks are green, then check the deploy printed a `dep-` id.
 
 6.7 On the live site: as Farah upload one sample at `/app/documents/`, then as Dina open `/app/review/` (your private password). The live database is separate from your local SQLite data; the API adds the new tables at start-up.
 
