@@ -55,6 +55,7 @@
 - Tests still pass against SQLite after 4.4: correct. Tests never use `.env`, so they never touch Render.
 - Chrome fallback (only if MCP is not possible): sign in to Render first, then ask Claude to run `list_connected_browsers` and use the Chrome on **this** computer; if more than one browser is listed, it must ask you which. If screenshots fail with "Cannot access a chrome-extension:// URL", pause your password-manager extension.
 - `next dev` fails on port 3000 in a worktree: stop the main folder's dev server. On Windows another app may also use `127.0.0.1:3000`; open `http://localhost:3000`.
+- Render down on the day: the trainer may switch to Vercel + Neon. See [docs/deployment-alternative.md](../../docs/deployment-alternative.md).
 
 ## Debrief
 What in your codebase would a Skill capture, and what would an MCP server connect?
