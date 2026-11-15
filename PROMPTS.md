@@ -76,7 +76,7 @@ Run dotnet run --project tools/TicketRunner and explain any ticket that does not
 
 ### Finish the worker
 ```text
-Read src/Api/Research/PolicyResearch.cs. Implement RunWorker(subtopic): a separate Claude conversation with only the search_policies and read_policy tools, limited by MaxTurnsPerWorker, that returns findings with policy ids. Keep the token counting per agent. Add tests with the fake Claude client.
+Read src/Api/Research/PolicyResearch.cs. Implement RunWorker(subtopic): a separate Claude conversation with only the search_policies and read_policy tools, limited by MaxTurnsPerWorker, that returns findings with policy ids. If it stops at the turn limit or the token budget, return text that starts with "Stopped:" so the lead marks that tool_result as an error. Keep the token counting per agent. Add tests with the fake Claude client.
 ```
 
 ## Lab 4 — Team productivity
