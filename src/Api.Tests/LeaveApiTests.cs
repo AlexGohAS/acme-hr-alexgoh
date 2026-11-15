@@ -59,4 +59,21 @@ public class LeaveApiTests(ApiFactory api) : IClassFixture<ApiFactory>
     }
 
     record Row(int Id, int EmployeeId, string Status);
+
+    [Fact]
+    public async Task Missing_start_date_is_400_not_year_1()
+    {
+        var farah = await api.SignedInAs(People.Farah);
+        var res = await farah.PostAsJsonAsync("/leave", new { endDate = "2030-01-08" });
+        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task Weekend_only_request_is_400()
+    {
+        var farah = await api.SignedInAs(People.Farah);
+        var sat = Api.Data.Seed.MondayOnOrAfter(new DateOnly(DateTime.UtcNow.Year + 1, 2, 1)).AddDays(5);
+        var res = await farah.PostAsJsonAsync("/leave", new { startDate = sat.ToString("yyyy-MM-dd"), endDate = sat.AddDays(1).ToString("yyyy-MM-dd") });
+        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+    }
 }
