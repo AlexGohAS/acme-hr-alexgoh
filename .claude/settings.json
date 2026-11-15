@@ -41,7 +41,23 @@
       "mcp__plugin_render_render__update_web_service",
       "mcp__plugin_render_render__update_static_site",
       "mcp__plugin_render_render__update_cron_job",
-      "mcp__plugin_render_render__update_environment_variables"
+      "mcp__plugin_render_render__update_environment_variables",
+      "mcp__render__create_blueprint",
+      "mcp__render__update_blueprint",
+      "mcp__render__approve_blueprint",
+      "mcp__render__trigger_deploy",
+      "mcp__render__create_workflow",
+      "mcp__render__create_workflow_version",
+      "mcp__render__start_flow_run",
+      "mcp__render__cancel_flow_run",
+      "mcp__plugin_render_render__create_blueprint",
+      "mcp__plugin_render_render__update_blueprint",
+      "mcp__plugin_render_render__approve_blueprint",
+      "mcp__plugin_render_render__trigger_deploy",
+      "mcp__plugin_render_render__create_workflow",
+      "mcp__plugin_render_render__create_workflow_version",
+      "mcp__plugin_render_render__start_flow_run",
+      "mcp__plugin_render_render__cancel_flow_run"
     ]
   },
   "hooks": {

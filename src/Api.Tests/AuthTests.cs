@@ -232,3 +232,33 @@ public class DocumentsAccessTests(ApiFactory api) : IClassFixture<ApiFactory>
         Assert.Equal(HttpStatusCode.OK, (await dina.GetAsync("/documents?status=NeedsReview")).StatusCode);
     }
 }
+
+public class SeedPasswordTests
+{
+    [Fact]
+    public void Sqlite_uses_the_training_password_by_default() =>
+        Assert.Equal(SeedLogins.DefaultPassword, SeedLogins.PasswordFor(postgres: false, configured: null));
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("Acme@2026")]
+    public void Postgres_needs_a_private_seed_password(string? configured) =>
+        Assert.Throws<InvalidOperationException>(() => SeedLogins.PasswordFor(postgres: true, configured));
+
+    [Fact]
+    public void Postgres_accepts_a_private_password() =>
+        Assert.Equal("Private#2026x", SeedLogins.PasswordFor(postgres: true, configured: "Private#2026x"));
+
+    [Fact]
+    public void Detects_a_database_seeded_with_the_public_password()
+    {
+        using var publicDb = TestDb.Create();
+        SeedLogins.Run(publicDb);
+        Assert.True(SeedLogins.UsesPublicPassword(publicDb));
+
+        using var privateDb = TestDb.Create();
+        SeedLogins.Run(privateDb, "Private#2026x");
+        Assert.False(SeedLogins.UsesPublicPassword(privateDb));
+    }
+}

@@ -12,6 +12,21 @@ public static class SeedLogins
 {
     public const string DefaultPassword = "Acme@2026";
 
+    /// <summary>The password for new logins. Local SQLite may use the public training password;
+    /// Postgres (Render, the live app) must have a private SEED_USER_PASSWORD, because this repo is public.</summary>
+    public static string PasswordFor(bool postgres, string? configured)
+    {
+        if (!postgres) return string.IsNullOrWhiteSpace(configured) ? DefaultPassword : configured;
+        if (string.IsNullOrWhiteSpace(configured) || configured == DefaultPassword)
+            throw new InvalidOperationException("SEED_USER_PASSWORD must be set to your own private password when DATABASE_URL is set. The training password Acme@2026 is public. Set it in .env (Lab 4) and in Render (Lab 5).");
+        return configured;
+    }
+
+    /// <summary>True when the training password still opens the first login: never acceptable on Postgres.</summary>
+    public static bool UsesPublicPassword(AcmeDb db) =>
+        db.Users.OrderBy(u => u.Email).FirstOrDefault() is { PasswordHash: { } hash } user
+        && new PasswordHasher<IdentityUser>().VerifyHashedPassword(user, hash, DefaultPassword) != PasswordVerificationResult.Failed;
+
     public static void Run(AcmeDb db, string? password = null)
     {
         if (db.Users.Any()) return;
