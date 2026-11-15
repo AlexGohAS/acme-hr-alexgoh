@@ -37,7 +37,7 @@
     "status": "Valid",
     "fields": {
       "employee_name": "Muhammad Faiz Hakim",
-      "clinic": "Klinik Kesihatan Ampang (synthetic)",
+      "clinic": "Klinik Kesihatan Ampang",
       "date_from": "2026-11-02",
       "date_to": "2026-11-03",
       "days": 2
@@ -154,7 +154,7 @@
     "fields": {
       "claim_no": "EC-2026-0144",
       "vendor": "Restoran Selera Kita",
-      "date": "2026-10-15",
+      "date": "2026-10-09",
       "currency": "MYR",
       "subtotal": 186.0,
       "tax": 11.16,
@@ -206,7 +206,7 @@
     "fields": {
       "claim_no": "EC-2026-0148",
       "vendor": "Tech Mart Plaza",
-      "date": "2026-10-24",
+      "date": "2026-10-06",
       "currency": "MYR",
       "subtotal": 114.0,
       "tax": 6.84,

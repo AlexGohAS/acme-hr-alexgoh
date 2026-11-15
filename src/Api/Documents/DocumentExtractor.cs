@@ -11,7 +11,8 @@ public class DocumentExtractor(IClaudeChat claude, ClaudeOptions options)
 
     const string Prompt = """
         Extract the data from this Acme HR document. It is a medical certificate (MC), an expense claim, or something else (kind "other").
-        Dates as yyyy-MM-dd. Amounts as numbers without currency symbols. Use null for the part that does not apply.
+        Dates as yyyy-MM-dd. Numeric dates such as 03/10/2026 are written month first (MM/dd/yyyy).
+        Amounts as numbers without currency symbols. Use null for the part that does not apply.
         Copy values exactly as written. Do not fix or invent numbers.
         """;
 
