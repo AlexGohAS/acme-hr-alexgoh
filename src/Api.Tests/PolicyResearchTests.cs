@@ -55,4 +55,35 @@ public class PolicyResearchTests
     [Fact]
     public void Citation_before_the_full_stop_counts() =>
         Assert.Empty(PolicyResearch.UncitedSentences("You can carry forward 5 days [POL-04]. Half days deduct 0.5 [POL-03]."));
+
+    [Fact]
+    public async Task Uncited_answer_gets_one_repair_turn()
+    {
+        var fake = new FakeClaude(
+            FakeClaude.Text("Yes, you can do both. Half days deduct 0.5 [POL-03]."),
+            FakeClaude.Text("You can do both [POL-03, POL-04]. Half days deduct 0.5 [POL-03]."));
+        var r = await Make(fake).AskAsync("Can I carry forward leave and take it as half days?");
+        Assert.True(r.CitationsValid);
+        Assert.Equal(2, fake.Requests.Count);
+        var last = fake.Requests[1];
+        Assert.Contains("Yes, you can do both.", FakeClaude.MessageJson(last, last.Messages.Count - 1).ToString());
+    }
+
+    [Fact]
+    public async Task Repair_happens_only_once()
+    {
+        var fake = new FakeClaude(FakeClaude.Text("Yes. You can."), FakeClaude.Text("Yes. You still can."), FakeClaude.Text("Never sent [POL-01]."));
+        var r = await Make(fake).AskAsync("Can I?");
+        Assert.False(r.CitationsValid);
+        Assert.Equal(2, fake.Requests.Count);
+    }
+
+    [Fact]
+    public async Task Cited_answer_needs_no_repair()
+    {
+        var fake = new FakeClaude(FakeClaude.Text("You get 14 days [POL-01]."));
+        var r = await Make(fake).AskAsync("How many days?");
+        Assert.True(r.CitationsValid);
+        Assert.Single(fake.Requests);
+    }
 }
