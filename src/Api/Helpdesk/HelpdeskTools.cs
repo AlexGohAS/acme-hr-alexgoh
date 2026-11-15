@@ -39,6 +39,8 @@ public class HelpdeskTools(AcmeDb db, LeaveService leave)
         }
         catch (LeaveException e) { return Error(e.Message); }
         catch (FormatException) { return Error("Dates must be in yyyy-MM-dd format."); }
+        catch (Exception e) when (e is InvalidOperationException or KeyNotFoundException or ArgumentException)
+        { return Error($"The tool input was not valid ({e.GetType().Name}). Check the tool's parameters."); }
     }
 
     async Task<ToolOutcome> ApplyLeaveAsync(IReadOnlyDictionary<string, JsonElement> input, int employeeId)

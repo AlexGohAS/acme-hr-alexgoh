@@ -30,6 +30,7 @@ public class PolicyResearch(IClaudeChat claude, AcmeDb db, ClaudeOptions options
         1. Split the question into 2 or 3 subtopics and call research once per subtopic.
         2. When the findings are back, write one answer for the employee, under 150 words.
         3. EVERY sentence, including a first yes or no, ends with the policy ids it relies on, before the full stop: "Staff get 14 days [POL-01]." Never state anything without a policy id. If the policies do not cover something, say so in one sentence with the ids you checked.
+        4. Plain text only: no markdown, no ** and no "- " bullets. The page shows your answer as it is.
         """;
 
     const string WorkerPrompt = """
@@ -58,7 +59,7 @@ public class PolicyResearch(IClaudeChat claude, AcmeDb db, ClaudeOptions options
         for (turns = 1; turns <= MaxTurnsLead; turns++)
         {
             if (_tokens >= TokenBudget) { stoppedBy = "token_budget"; break; }
-            var res = await claude.SendAsync(new MessageCreateParams { Model = options.Model, MaxTokens = 1500, System = LeadPrompt, Tools = LeadTools, Messages = history }, ct);
+            var res = await claude.SendAsync(new MessageCreateParams { Model = options.Model, MaxTokens = 1500, System = LeadPrompt, Tools = LeadTools, Messages = history.ToList() }, ct);
             inTok += res.Usage.InputTokens; outTok += res.Usage.OutputTokens; _tokens += res.Usage.InputTokens + res.Usage.OutputTokens;
             history.Add(new AssistantMessageParam { Content = res.Content.Select(b => new ContentBlockParam(b.Json)).ToList() });
 
@@ -93,7 +94,7 @@ public class PolicyResearch(IClaudeChat claude, AcmeDb db, ClaudeOptions options
             for (turn = 1; turn <= MaxTurnsPerWorker; turn++)
             {
                 if (_tokens >= TokenBudget) return "Stopped: token budget used up.";
-                var res = await claude.SendAsync(new MessageCreateParams { Model = options.Model, MaxTokens = 1000, System = WorkerPrompt, Tools = WorkerTools, Messages = history }, ct);
+                var res = await claude.SendAsync(new MessageCreateParams { Model = options.Model, MaxTokens = 1000, System = WorkerPrompt, Tools = WorkerTools, Messages = history.ToList() }, ct);
                 inTok += res.Usage.InputTokens; outTok += res.Usage.OutputTokens; _tokens += res.Usage.InputTokens + res.Usage.OutputTokens;
                 history.Add(new AssistantMessageParam { Content = res.Content.Select(b => new ContentBlockParam(b.Json)).ToList() });
                 if (res.StopReason != StopReason.ToolUse) return TextOf(res);

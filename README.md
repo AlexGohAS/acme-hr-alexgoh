@@ -15,20 +15,21 @@ Your team builds **Acme HR**, a small HR platform with AI, one lab at a time, us
 
 Everyone builds their own copy of Acme HR. Your team sits together, helps each other and scores together.
 
-1. Click **Use this template** → tick **Include all branches** → create the repo under your own GitHub account.
+1. Click **Use this template** → tick **Include all branches** → set it to **Public** (Lab 5 required checks need a public repo on GitHub Free) → create the repo under your own GitHub account.
 2. `git clone` your repo, `cd` into it, and run **once**: `./scripts/sync-lab-branches.sh` (Windows: `.\scripts\sync-lab-branches.ps1`). A template copy gives every branch a separate history; this restores the shared history so Lab 5 pull requests work.
 3. Copy `.env.example` to `.env` and fill in `ANTHROPIC_API_KEY` (your own Console key, see the prep guide). Keep it in `.env` only: if it is exported in your shell, Claude Code bills it instead of your Claude plan. Not needed until Lab 4: your own free Render Postgres and `DATABASE_URL`. Without it the API uses a local SQLite file.
 4. Run `./check-setup.sh` (macOS/Linux/Git Bash) or `./check-setup.ps1` (Windows PowerShell).
 5. Run it:
    - API: `dotnet run --project src/Api` → http://localhost:5080/health should say **database connected**
-   - Web: `cd web && cp .env.example .env.local && npm install && npm run dev` → http://localhost:3000
+   - Web (from the repo root, in a second terminal): copy `web/.env.example` to `web/.env.local`, then `npm --prefix web install` and `npm --prefix web run dev` → http://localhost:3000. Using `--prefix` keeps you in the repo root; if Claude runs `cd web`, its folder stays in `web/`.
+   - Windows: stop the API (Ctrl+C) before `dotnet test` or a build. A running API locks `src/Api/bin` and the build fails with MSB3027.
 6. Sign in at http://localhost:3000 with a training account (below).
 7. Start Claude Code in the repo (`claude`) and **accept the trust dialog**. Until you do, the team allow rules in `.claude/settings.json` are ignored and Claude asks before every `dotnet` command. Then paste **Explain the repo** from [PROMPTS.md](PROMPTS.md).
 
 ## Sign in (training accounts)
 
 Every seeded employee can sign in with their work email and the shared training password **`Acme@2026`**
-(set `SEED_USER_PASSWORD` in `.env` to change it before the first run). Use these four:
+(set `SEED_USER_PASSWORD` in `.env` to change it before the first run). Your live app (Lab 5) uses your own private password instead: see Lab 4 step 4.4. Use these four:
 
 | Who | Email | Roles | Can do |
 |---|---|---|---|
@@ -54,7 +55,7 @@ Each lab starts from the previous lab's finished code. Behind? Check out the nex
 | 5 | [Lab 5 — Claude Code for CI](labs/lab5/README.md) | `lab5-start` | CI gates + Claude review, deploy live |
 | 6 | [Lab 6 — Structured Data Extraction](labs/lab6/README.md) | `lab6-start` | Document intake with HR review |
 
-**All prompts:** [PROMPTS.md](PROMPTS.md) — copy and paste, no typing.
+**All prompts:** [PROMPTS.md](PROMPTS.md) — copy and paste, no typing. Step numbers (1.2, 4.5 …) are the same in the lab guides, PROMPTS.md and the trainer's dry run.
 
 **Starter templates for your own repos:** [templates/ on the `final` branch](https://github.com/anchor-academy/acme-hr-workshop-net/tree/final/templates)
 

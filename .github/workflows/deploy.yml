@@ -7,7 +7,7 @@ on:
 jobs:
   deploy-api:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # pinned: ubuntu-latest moves to a new image on its own
     timeout-minutes: 5
     steps:
       - name: Trigger Render deploy

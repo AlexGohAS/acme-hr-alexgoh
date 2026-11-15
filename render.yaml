@@ -14,4 +14,6 @@ services:
       - key: DATABASE_URL
         sync: false            # your Lab 4 Render Postgres: Connect -> Internal Database URL
       - key: ANTHROPIC_API_KEY
-        sync: false
+        sync: false            # use a key with a spend limit: anyone who signs in to your live app spends it
+      - key: SEED_USER_PASSWORD
+        sync: false            # a private password for the live app's seeded users; used only when the database is first seeded
