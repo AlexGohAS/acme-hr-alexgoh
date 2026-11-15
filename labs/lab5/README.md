@@ -51,6 +51,7 @@
 - "Entirely different commit histories" on the PR: the sync script did not run in setup.
 - First page load takes about a minute: the free service sleeps after 15 minutes idle. Open `/health` to wake it.
 - Deploy fails on the database: use the **Internal** Database URL (same region, Singapore), not the External one.
+- Render down on the day: the trainer may switch to Vercel + Neon. See [docs/deployment-alternative.md](../../docs/deployment-alternative.md).
 
 ## After the workshop
 Suspend or delete the Render service and the free database, and delete or limit the Anthropic key you gave to GitHub and Render.
