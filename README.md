@@ -21,7 +21,7 @@ Everyone builds their own copy of Acme HR. Your team sits together, helps each o
 4. Run `./check-setup.sh` (macOS/Linux/Git Bash) or `./check-setup.ps1` (Windows PowerShell).
 5. Run it:
    - API: `dotnet run --project src/Api` → http://localhost:5080/health should say **database connected**
-   - Web (from the repo root, in a second terminal): copy `web/.env.example` to `web/.env.local`, then `npm --prefix web install` and `npm --prefix web run dev` → http://localhost:3000. Using `--prefix` keeps you in the repo root; if Claude runs `cd web`, its folder stays in `web/`.
+   - Web (from the repo root, in a second terminal): copy `web/.env.example` to `web/.env.local` yourself (the secrets hook stops Claude from touching `.env` files; the app also works without it), then `npm --prefix web ci` and `npm --prefix web run dev` → http://localhost:3000. Use `ci`, not `install`: it keeps `web/package-lock.json` unchanged. Using `--prefix` keeps you in the repo root; if Claude runs `cd web`, its folder stays in `web/`.
    - Windows: stop the API (Ctrl+C) before `dotnet test` or a build. A running API locks `src/Api/bin` and the build fails with MSB3027.
 6. Sign in at http://localhost:3000 with a training account (below).
 7. Start Claude Code in the repo (`claude`) and **accept the trust dialog**. Until you do, the team allow rules in `.claude/settings.json` are ignored and Claude asks before every `dotnet` command. Then paste **Explain the repo** from [PROMPTS.md](PROMPTS.md).
@@ -44,7 +44,7 @@ Training only: a real system never shares one password between users.
 
 ## Labs (build order)
 
-Each lab starts from the previous lab's finished code. Behind? Check out the next start branch and keep going.
+Each lab starts from the previous lab's finished code. Behind? Check out the next start branch and keep going. A start branch has the course solution, not your code: commit your own work on a branch of your own first if you want to keep it.
 
 | Order | Lab | Branch | Adds to Acme HR |
 |---|---|---|---|
