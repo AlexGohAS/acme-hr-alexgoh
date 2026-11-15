@@ -22,6 +22,10 @@ public class LeaveRequest
     public HalfDay HalfDay { get; set; } = HalfDay.None;
     public LeaveStatus Status { get; set; } = LeaveStatus.Pending;
     public string Reason { get; set; } = "";
+
+    /// <summary>Working days this request takes (0.5 for a half day). Computed, not stored.</summary>
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public decimal Days => Api.Services.LeaveService.DaysOf(this);
 }
 
 public class Policy
