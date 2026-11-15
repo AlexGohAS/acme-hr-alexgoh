@@ -78,9 +78,20 @@ public class PolicyResearch(IClaudeChat claude, AcmeDb db, ClaudeOptions options
             history.Add(new UserMessageParam { Content = results });
         }
         if (turns > MaxTurnsLead) stoppedBy = "turn_limit";
-        _usage.Insert(0, new AgentUsage("lead", Math.Min(turns, MaxTurnsLead), inTok, outTok));
+        var leadTurns = Math.Min(turns, MaxTurnsLead);
 
+        // Citations are checked in C#, not trusted. One repair turn: name the uncited sentences and ask for a rewrite.
         var uncited = UncitedSentences(answer);
+        if (stoppedBy == "end_turn" && answer.Length > 0 && uncited.Count > 0 && _tokens < TokenBudget)
+        {
+            history.Add(new UserMessageParam { Content = RepairRequest(uncited) });
+            var fix = await claude.SendAsync(new MessageCreateParams { Model = options.Model, MaxTokens = 1500, System = LeadPrompt, Tools = LeadTools, Messages = history.ToList() }, ct);
+            inTok += fix.Usage.InputTokens; outTok += fix.Usage.OutputTokens; _tokens += fix.Usage.InputTokens + fix.Usage.OutputTokens;
+            leadTurns++;
+            var rewritten = TextOf(fix);
+            if (fix.StopReason == StopReason.EndTurn && rewritten.Length > 0) { answer = rewritten; uncited = UncitedSentences(answer); }
+        }
+        _usage.Insert(0, new AgentUsage("lead", leadTurns, inTok, outTok));
         return new ResearchResult(answer, answer.Length > 0 && uncited.Count == 0, uncited, _usage, _tokens, stoppedBy);
     }
 
@@ -127,6 +138,11 @@ public class PolicyResearch(IClaudeChat claude, AcmeDb db, ClaudeOptions options
 
     async Task<string> ReadAsync(string id) =>
         await db.Policies.FindAsync(id.Trim().ToUpperInvariant()) is { } p ? JsonSerializer.Serialize(new { p.Id, p.Title, p.Body }) : $"No policy with id {id}.";
+
+    /// <summary>The repair message: the exact sentences without a policy id.</summary>
+    public static string RepairRequest(IEnumerable<string> uncited) =>
+        "These sentences have no policy id: " + string.Join(" | ", uncited.Select(s => $"\"{s}\"")) +
+        ". Rewrite the whole answer under the same rules: end every sentence with the policy ids it relies on, or remove the sentence. Do not call research again.";
 
     /// <summary>Every sentence must cite at least one policy id like [POL-03]. An id written just after the full stop still counts for that sentence.</summary>
     public static List<string> UncitedSentences(string answer) =>

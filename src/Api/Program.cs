@@ -36,7 +36,10 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
     SchemaUpgrade.AddMissingTables(db);
     Seed.Run(db);
-    SeedLogins.Run(db, builder.Configuration["SEED_USER_PASSWORD"]);
+    var postgres = !string.IsNullOrWhiteSpace(pg);
+    SeedLogins.Run(db, SeedLogins.PasswordFor(postgres, builder.Configuration["SEED_USER_PASSWORD"]));
+    if (postgres && SeedLogins.UsesPublicPassword(db))
+        throw new InvalidOperationException("This Postgres database was seeded with the public training password Acme@2026. Recreate the database (or change the passwords) before using it: the app would be open to anyone who reads the README.");
 }
 
 app.UseCors();
