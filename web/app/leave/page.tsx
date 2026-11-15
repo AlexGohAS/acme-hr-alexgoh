@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { api, currentEmployee, LeaveRequest } from "@/lib/api";
+import { api, Balance, currentEmployee, LeaveRequest } from "@/lib/api";
 
 export default function Leave() {
   const [rows, setRows] = useState<LeaveRequest[]>([]);
@@ -10,7 +10,11 @@ export default function Leave() {
   const me = currentEmployee();
   // The API decides who may approve (403 otherwise). The page only hides buttons that would fail.
   const canDecide = (r: LeaveRequest) => r.status === "Pending" && r.employeeId !== me?.id && (me?.roles ?? []).some(x => x === "Manager" || x === "HR");
-  const load = () => api<LeaveRequest[]>("/leave").then(setRows).catch(e => setError(e.message));
+  const [balance, setBalance] = useState<Balance | null>(null);
+  const load = () => {
+    api<LeaveRequest[]>("/leave").then(setRows).catch(e => setError(e.message));
+    if (me) api<Balance>(`/employees/${me.id}/balance`).then(setBalance).catch(() => setBalance(null));
+  };
   useEffect(() => { load(); }, []);
 
   async function submit(e: React.FormEvent) {
@@ -29,6 +33,7 @@ export default function Leave() {
     <>
       <form className="card" onSubmit={submit}>
         <h2>New leave request</h2>
+        {balance && <p>Available: <b>{balance.available}</b> of {balance.entitlement} days ({balance.pending} pending)</p>}
         <p>
           <label>From <input type="date" required value={form.startDate} onChange={e => setForm({ ...form, startDate: e.target.value })} /></label>{" "}
           {form.halfDay === "None" && <label>To <input type="date" required value={form.endDate} onChange={e => setForm({ ...form, endDate: e.target.value })} /></label>}{" "}

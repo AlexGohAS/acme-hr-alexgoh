@@ -51,4 +51,8 @@ public class PolicyResearchTests
         Assert.Empty(PolicyResearch.UncitedSentences("You can carry forward 5 days. [POL-04] Half days deduct 0.5. [POL-03]"));
         Assert.Equal(["Yes, you can do both."], PolicyResearch.UncitedSentences("Yes, you can do both. Half days deduct 0.5. [POL-03]"));
     }
+
+    [Fact]
+    public void Citation_before_the_full_stop_counts() =>
+        Assert.Empty(PolicyResearch.UncitedSentences("You can carry forward 5 days [POL-04]. Half days deduct 0.5 [POL-03]."));
 }
