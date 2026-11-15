@@ -19,7 +19,7 @@ public static class SeedLogins
         var roles = Roles.All.ToDictionary(r => r, r => new IdentityRole(r) { NormalizedName = r.ToUpperInvariant() });
         db.Roles.AddRange(roles.Values);
 
-        var hash = new PasswordHasher<IdentityUser>().HashPassword(new IdentityUser(), password ?? DefaultPassword);
+        var hash = new PasswordHasher<IdentityUser>().HashPassword(new IdentityUser(), string.IsNullOrWhiteSpace(password) ? DefaultPassword : password);
         var employees = db.Employees.OrderBy(e => e.Id).ToList();
         foreach (var e in employees)
         {
