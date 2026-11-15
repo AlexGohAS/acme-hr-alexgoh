@@ -5,8 +5,8 @@ Run from the repo root: python3 tools/sample-docs/make_pdfs.py
 Needs: pip install reportlab pillow, and pdftoppm (poppler) for the scanned ones.
 All people, clinics, vendors and numbers are synthetic. Some documents are text PDFs (selectable
 text); the ones in SCANS are image-only PDFs that look like a phone photo or a scan.
-Planted on purpose: 08, 10, 17 are wrong on paper; 19, 20 are not MCs or claims; 11 has the
-ambiguous date 03/10/2026 (it means 3 October; Malaysian documents write the day first).
+Planted on purpose: 08, 10, 17 are wrong on paper; 19, 20 are not MCs or claims.
+Numeric dates are written day first (dd/MM/yyyy), as on Malaysian documents.
 """
 import io, os, random, subprocess, tempfile
 from reportlab.lib.pagesizes import A4, A5
@@ -139,13 +139,13 @@ DOCS = {
     "10-mc": (mc_formal, A4, dict(clinic="KLINIK MEDIK SUBANG", addr="5 Jalan Contoh, Subang Jaya, Selangor", no="2026-1010", doctor="Dr. A. Example (MMC 00000, synthetic)",
               body=["This is to certify that Lim Kok Seng was examined today and is unfit for duty", "for 0 day(s) from 30/10/2026 to 29/10/2026."])),
     "11-claim": (claim_form, A4, dict(no="EC-2026-0141", vendor="RideNow (synthetic)", date="03/10/2026", cur="MYR", items=[("Ride to client office", "28.50"), ("Ride back", "31.20")], sub="59.70", tax="0.00", total="59.70")),
-    "12-claim": (receipt, None, dict(vendor="HOTEL SERI PANTAI PENANG", addr="Batu Ferringhi, Penang (synthetic)", date="08 October 2026", no="Claim no. EC-2026-0142", items=[("Room 2 nights", "MYR 420.00"), ("Breakfast", "MYR 60.00")], sub="MYR 480.00", taxlabel="Tax", tax="MYR 38.40", total="MYR 518.40")),
+    "12-claim": (receipt, None, dict(vendor="HOTEL SERI PANTAI PENANG", addr="Batu Ferringhi, Penang (synthetic)", date="08/10/2026", no="Claim no. EC-2026-0142", items=[("Room 2 nights", "MYR 420.00"), ("Breakfast", "MYR 60.00")], sub="MYR 480.00", taxlabel="Tax", tax="MYR 38.40", total="MYR 518.40")),
     "13-claim": (claim_form, A4, dict(no="EC-2026-0143", vendor="Kedai Buku Ilmu", date="11/10/2026", cur="MYR", items=[("Technical book", "129.90")], sub="129.90", tax="0.00", total="129.90")),
-    "14-claim": (receipt, None, dict(vendor="RESTORAN SELERA KITA", addr="Jalan Contoh, Petaling Jaya (synthetic)", date="15 October 2026", no="Claim no. EC-2026-0144", items=[("Team lunch, 6 pax", "MYR 186.00")], sub="MYR 186.00", taxlabel="Tax", tax="MYR 11.16", total="MYR 197.16")),
+    "14-claim": (receipt, None, dict(vendor="RESTORAN SELERA KITA", addr="Jalan Contoh, Petaling Jaya (synthetic)", date="09/10/2026", no="Claim no. EC-2026-0144", items=[("Team lunch, 6 pax", "MYR 186.00")], sub="MYR 186.00", taxlabel="Tax", tax="MYR 11.16", total="MYR 197.16")),
     "15-claim": (claim_form, A4, dict(no="EC-2026-0145", vendor="SkyHop Air (synthetic)", date="25/09/2026", cur="MYR", items=[("KUL-PEN return", "289.00"), ("Baggage 20kg", "65.00")], sub="354.00", tax="0.00", total="354.00")),
     "16-claim": (receipt, None, dict(vendor="CLOUD TRAINING PTE LTD", addr="Singapore (synthetic)", date="18 October 2026", no="Claim no. EC-2026-0146", items=[("Online course", "SGD 250.00")], sub="SGD 250.00", taxlabel="Tax", tax="SGD 22.50", total="SGD 272.50")),
     "17-claim": (claim_form, A4, dict(no="EC-2026-0147", vendor="Parking Menara Contoh", date="21/10/2026", cur="MYR", items=[("Parking", "24.00")], sub="24.00", tax="1.44", total="26.44")),
-    "18-claim": (receipt, None, dict(vendor="TECH MART PLAZA", addr="Jalan Contoh, KL (synthetic)", date="24 October 2026", no="Claim no. EC-2026-0148", items=[("USB-C adapter", "MYR 79.00"), ("HDMI cable", "MYR 35.00")], sub="MYR 114.00", taxlabel="Tax", tax="MYR 6.84", total="MYR 120.84")),
+    "18-claim": (receipt, None, dict(vendor="TECH MART PLAZA", addr="Jalan Contoh, KL (synthetic)", date="06/10/2026", no="Claim no. EC-2026-0148", items=[("USB-C adapter", "MYR 79.00"), ("HDMI cable", "MYR 35.00")], sub="MYR 114.00", taxlabel="Tax", tax="MYR 6.84", total="MYR 120.84")),
     "19-other": (memo, A4, {}),
     "20-other": (email, A4, {}),
 }
