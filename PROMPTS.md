@@ -81,6 +81,11 @@ Read src/Api/Research/PolicyResearch.cs. Implement RunWorker(subtopic): a separa
 
 ## Lab 4 — Team productivity
 
+### Create the database
+```text
+Using the render MCP server: select my workspace, then create a Postgres database named acme-hr-db with plan free in region singapore. Do not show any connection string or password. Tell me its id and wait until its status is available.
+```
+
 ### MCP question
 ```text
 Using the render MCP server: select my workspace, find my acme-hr Postgres database, and answer with a read-only query: which employees have more than 10 days of leave available? Show the SQL you used.
