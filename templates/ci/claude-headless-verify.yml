@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   claude-review:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04          # pinned: ubuntu-latest moves to a new release
     timeout-minutes: 10            # limit 1: wall-clock time
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +25,7 @@ jobs:
 
       - name: Install Claude Code
         if: steps.key.outputs.skip != 'true'
-        run: npm install -g @anthropic-ai/claude-code
+        run: npm install -g @anthropic-ai/claude-code@2.1.316   # pinned: update on purpose, not mid-sprint
 
       - name: Review
         if: steps.key.outputs.skip != 'true'
@@ -35,7 +35,8 @@ jobs:
         run: |
           git diff "$BASE"...HEAD > pr.diff
           claude -p "You are an independent reviewer. Read pr.diff (it has the full change); open other files only when you need context. Check: missing or weak tests for changed behaviour, obvious bugs, security problems, secrets. Be specific: file and line. Block only for real defects; put minor ideas under 'Suggestions', they do not change the verdict. End with exactly one line: VERDICT: PASS or VERDICT: FAIL." \
-            --output-format json --max-turns 12 --allowedTools "Read,Grep,Glob" > review.json   # limit 2: turns; read-only tools
+            --output-format json --max-turns 12 --allowedTools "Read,Grep,Glob" > review.json \
+            || { echo "::error::Claude Code stopped with an error (wrong key?). Details, no secrets:"; jq '{subtype, is_error, result}' review.json 2>/dev/null || head -c 800 review.json; exit 1; }   # limit 2: turns; read-only tools
           if [ "$(jq -r '.subtype' review.json)" != "success" ]; then echo "::error::Review did not finish ($(jq -r '.subtype' review.json)). Re-run or raise --max-turns."; exit 1; fi
           jq -r '.result' review.json > review.md
           echo "Cost USD: $(jq -r '.total_cost_usd' review.json) · Turns: $(jq -r '.num_turns' review.json)" >> "$GITHUB_STEP_SUMMARY"   # limit 3: visible cost
