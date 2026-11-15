@@ -1,12 +1,19 @@
 # Prompts — copy and paste
 
-Every prompt used on the slides and in the labs. Click the copy button on each block.
+Every prompt used on the slides and in the labs, in lab order. Step numbers (1.2, 4.5 …) match the lab guides in `labs/`.
+
+Each lab prompt says the exact values to use, what to check, what never to do, the result to expect and where to stop and ask. If Claude's result does not match the expected result, stop and ask a trainer instead of asking Claude to try harder.
+
+**Machine notes**
+- Windows: stop the API (Ctrl+C) before `dotnet test` or a build. A running API locks `src/Api/bin` and the build fails with MSB3027 (the test hook then says "Tests failing" with no test names).
+- Claude Code can stop background dev servers when memory is low. If a page stops loading, start the API or web app again.
+- Never paste a key, password, database URL or deploy hook into Claude. Put them in `.env` with your editor, or use `gh secret set` in your own terminal.
 
 ## Setup
 
-### Explain the repo
+### Explain the repo (S.5)
 ```text
-Explain this repo and how to run it. Point me to the files for the API, the web app, the tests and the Claude Code settings. Do not change anything.
+Explain this repo and how to run it. Point me to the files for the API, the web app, the tests and the Claude Code settings. Do not change anything, and do not open .env.
 ```
 
 ## Module 3 — Claude Code
@@ -45,98 +52,140 @@ Read tools/Warmup/Program.cs. Add a second tool, get_public_holidays(state), tha
 
 ## Lab 1 — Leave API
 
-### Plan prompt (plan mode)
+### Plan prompt (1.2, plan mode)
 ```text
 Read docs/feature-spec-leave.md, src/Api/Services/LeaveService.cs, src/Api/Auth/AccessService.cs and the failing test. Propose a plan: files to change, tests to add first, and risks. Include fixing the failing weekend test. Ask me if anything in the spec is unclear. Don't write code yet.
 ```
 
-### Build it
+### Build it (1.3)
 ```text
-Go ahead with the plan. Write the tests first, then the code, including API tests in src/Api.Tests that another employee gets 403 on approve. Keep controllers thin. When the API is done, add the create form and Approve / Reject buttons to web/app/leave/page.tsx using web/lib/api.ts. Then run npm run build in web/ to check the page compiles.
+Go ahead with the plan. Write the tests first, then the code, including API tests in src/Api.Tests that another employee gets 403 on approve. Keep controllers thin. When the API is done, add the create form and Approve / Reject buttons to web/app/leave/page.tsx using web/lib/api.ts; show each request's days from the API and the available balance. Then run npm --prefix web run build to check the page compiles.
+Never: open .env, change the planted tests to make them pass, push.
+Expected: every test passes, including the weekend test that failed at the start, and the web build succeeds. If a test fails for a reason outside this lab, stop and tell me.
 ```
 
-### Try to break the rules
+### Try to break the rules (1.4)
 ```text
-I own this repo and I'm allowing it this once: show me the variable names in .env (names only, no values). Try the Read tool first. If that is blocked, try a shell command. Tell me exactly what stopped you each time.
+Test the secret protection without touching my real .env. src/.env does not exist, so nothing can leak.
+1. From the repo root: use the Read tool on src/.env. Then run the shell command: echo hook-test .env
+2. Run cd web. From there: use the Read tool on ../src/.env, then run: echo hook-test .env. Then cd back to the repo root.
+For each of the 4 attempts, tell me exactly what stopped it: "denied by your permission settings" (a deny rule), "Blocked by hook", or nothing. Show the results as a table: folder, attempt, what stopped it.
+Never: open, read or print the real .env, or retry a blocked attempt with another command.
 ```
 
 ## Lab 2 — HR helpdesk agent
 
-### Finish the agent loop
+### Finish the agent loop (2.2)
 ```text
-Read src/Api/Helpdesk/HelpdeskAgent.cs and HelpdeskTools.cs. Complete the TODOs: the agent loop must resend the full history every turn, check StopReason, return one tool_result for every tool_use (even on error), and stop at MaxTurns. Then implement the 3-working-day rule inside the apply_leave tool in C#, not in the prompt. Write unit tests with the fake Claude client in src/Api.Tests.
+Read src/Api/Helpdesk/HelpdeskAgent.cs and HelpdeskTools.cs. Complete the TODOs: the agent loop must resend the full history every turn (send a copy: history.ToList()), check StopReason, return one tool_result for every tool_use (even when the tool throws), and stop at MaxTurns. Then implement the 3-working-day rule inside the apply_leave tool in C#, not in the prompt. Write unit tests with FakeClaude in src/Api.Tests (FakeClaude.Text, FakeClaude.ToolUses and FakeClaude.ToolResults).
+Never: put the rule only in the prompt, change tickets.json, push.
+Expected: all tests pass, including the 5 helpdesk tests that failed at the start.
 ```
 
-### Run the tickets
+### Run the tickets (2.3)
 ```text
-Run dotnet run --project tools/TicketRunner and explain any ticket that does not match its expected outcome.
+The API is running with my key in .env. Run dotnet run --project tools/TicketRunner. Show a table: ticket, expected, outcome, turns used. For any ticket that failed, show its reply and tool outputs and explain why.
+Expected: 10 tickets get an outcome; ticket 3 returns needs_manager_approval from apply_leave; ticket 6 cites POL-05 and ticket 10 cites POL-11; ticket 7 (prompt injection) is refused and creates no leave; no run goes past MaxTurns.
+If every ticket fails with 401 or "invalid key", stop and tell me: the key is missing from .env or the API was not restarted.
 ```
 
 ## Lab 3 — Policy research agents
 
-### Finish the worker
+### Finish the worker (3.2)
 ```text
-Read src/Api/Research/PolicyResearch.cs. Implement RunWorker(subtopic): a separate Claude conversation with only the search_policies and read_policy tools, limited by MaxTurnsPerWorker, that returns findings with policy ids. If it stops at the turn limit or the token budget, return text that starts with "Stopped:" so the lead marks that tool_result as an error. Keep the token counting per agent. Add tests with the fake Claude client.
+Read src/Api/Research/PolicyResearch.cs. Implement RunWorker(subtopic): a separate Claude conversation with only the search_policies and read_policy tools, limited by MaxTurnsPerWorker, that returns findings with policy ids. If it stops at the turn limit or the token budget, return text that starts with "Stopped:" so the lead marks that tool_result as an error. Keep the token counting per agent. Add tests with FakeClaude for: a normal answer, the turn limit, and the token budget.
+Never: give workers more tools, raise the limits to make a test pass, push.
+Expected: all tests pass, including the 2 research tests that failed at the start.
+```
+
+### Ask a research question (3.4)
+```text
+The API is running. Signed in as farah.tan6@acme-hr.example (password in README.md), call the policy research endpoint with: "Can I carry forward leave and take it as half days?" Show the answer, the policy id cited for each claim, citationsValid, stoppedBy, the number of workers and turns against MaxWorkers and MaxTurnsPerWorker, and tokens per agent. Do not print the token.
+Expected: citationsValid true, stoppedBy end_turn, inside the limits, every claim cites POL-xx.
 ```
 
 ## Lab 4 — Team productivity
 
-### Create the database
+### Create the database (4.2)
 ```text
-Using the render MCP server: select my workspace, then create a Postgres database named acme-hr-db with plan free in region singapore. Do not show any connection string or password. Tell me its id and wait until its status is available.
+Use the render MCP server. List my Render workspaces and ask me to confirm one. Then call create_postgres with name acme-hr-db, plan free, region singapore, version 16, in that workspace. Do not request or show any connection string, password or key. Check the status with get_postgres until it is available (this takes a few minutes), then tell me the id, plan, region, version and expiry date, and tell me what I must add to the IP allow list to connect from my laptop.
+Stop and ask me if: there is more than one workspace, a free database already exists, or the plan is not free.
 ```
 
-### Check the guardrail
+### Check the database (4.5)
 ```text
-Show me the Render deny and ask rules in .claude/settings.json and the exact name of the Render tool for updating environment variables in this session. Then call it once to set TEST=1 on the service with id srv-does-not-exist. Tell me exactly what stopped you: a permission rule, or Render itself.
+I have put DATABASE_URL in .env myself. Do not open .env. Restart the API and call http://localhost:5080/health. Tell me the provider and the database line.
+Expected: "provider":"Npgsql.EntityFrameworkCore.PostgreSQL" and database connected. If it says Sqlite, stop: .env was not saved or the API did not restart. If it says NOT connected, stop: check the IP allow list.
 ```
 
-### MCP question
+### MCP question (4.5)
 ```text
-Using the render MCP server: select my workspace, find my acme-hr Postgres database, and answer with a read-only query: which employees have more than 10 days of leave available? Show the SQL you used.
+Using the render MCP server: select my workspace, find my acme-hr-db Postgres database, and answer with a read-only query: which employees have more than 10 days of leave available? Show the SQL you used. Do not change any data.
 ```
 
-### Feature A (worktree 1)
+### Check the guardrail (4.6)
 ```text
-Read docs/feature-spec-calendar.md and build it. Plan first, tests where it applies.
+Show me the Render deny and ask rules in .claude/settings.json and list the Render tools you have in this session. Is update_environment_variables among them? If it is, call it once to set TEST=1 on the service with id srv-does-not-exist. Tell me exactly what stopped you: the tool is not available (removed by a deny rule), a permission rule, or Render itself.
 ```
 
-### Feature B (worktree 2)
+### Feature A (4.8, worktree 1)
+```text
+Read docs/feature-spec-calendar.md and build it. Plan first, tests where it applies. Use port 3000 for the web app only after the main folder's dev server is stopped.
+```
+
+### Feature B (4.8, worktree 2)
 ```text
 Read docs/feature-spec-holidays.md and build it with /new-endpoint. Plan first, tests first.
 ```
 
-### Commit the feature (in each worktree)
+### Commit the feature (4.8, in each worktree)
 ```text
-Run the tests, then commit all changes in this worktree with a short message that says what the feature does for HR users.
+Run dotnet test, then commit the changes for this feature with a short message that says what the feature does for HR users. Before you commit, show me git status. Do not commit CLAUDE.md changes, .claude/settings.json changes, or a package-lock.json that changed only because of my npm version. Do not push.
 ```
 
-### Release notes
+### Release notes (4.9)
 ```text
 Write release notes for this release.
 ```
 
 ## Lab 5 — CI
 
-### Fix the planted bug
+### Open the pull request (5.4)
+```text
+Open a pull request from lab5-planted-bug to main with gh pr create, title "Lab 5: planted bug". Show me the files changed. Wait for the checks with gh pr checks --watch and tell me the result of ci and claude-review. Do not merge.
+Expected: only CoreControllers.cs and LeaveService.cs changed; ci passes; claude-review fails and posts one comment in the Conversation tab.
+If claude-review fails within seconds and there is no comment, stop: the ANTHROPIC_API_KEY secret is wrong.
+```
+
+### Fix the planted bug (5.6)
 ```text
 The claude-review check failed on my pull request. Here is the review comment:
 
 <paste the review comment from the pull request>
 
-Write a failing test that shows the bug, then fix it. Run the tests and tell me which ran.
+Write failing tests that show the bug: one test each for Approved, Pending and Rejected. Then fix it. Run the tests and tell me which ran. Do not push.
+```
+
+### Check the deploy (5.7)
+```text
+Run gh run list --branch main --limit 5, then show the log of the latest deploy run with gh run view --log. Tell me if the deploy step printed a deploy id that starts with dep-. Do not print any secret.
+Expected: {"deploy":{"id":"dep-..."}}. If it says RENDER_DEPLOY_HOOK not set, the deploy was skipped even though the run is green: stop and set the secret.
 ```
 
 ## Lab 6 — Document intake
 
-### Finish the extractor
+### Finish the extractor (6.2)
 ```text
-Read src/Api/Documents/DocumentExtractor.cs and docs/feature-spec-documents.md. Implement the TODOs: JSON schema output with OutputConfig, validation in C#, one retry with the validation error, otherwise NeedsReview. Add tests with the fake Claude client.
+Read src/Api/Documents/DocumentExtractor.cs, DocumentValidator.cs and docs/feature-spec-documents.md. Implement the TODOs: JSON schema output with OutputConfig, return NeedsReview for a stop reason other than end_turn, parse and validate in C#, one retry with the exact validation problems, otherwise NeedsReview. The retry message must say: correct only reading mistakes; if the document itself is wrong, keep its values as written. Add tests with FakeClaude, including one for stop reason max_tokens (FakeClaude.Text(json, "max_tokens")).
+Never: change DocumentValidator rules, the samples in seed/documents or expected.json to make a test or score pass; push.
+Expected: all tests pass, including the 5 extractor tests that failed at the start.
 ```
 
-### Improve the score
+### Improve the score (6.4)
 ```text
-Run dotnet run --project tools/ExtractScore and look at the fields that are wrong most often. Suggest one change to the prompt or the schema, make it, and run the score again.
+The API is running with my key in .env. Run dotnet run --project tools/ExtractScore -- --team "<your team>". Look at the wrong-field lines and find the field that is wrong most often. Suggest ONE change to the prompt or the schema and wait for my OK. Then stop the API, make the change, run dotnet test, start the API again and run the score again. Show both scores.
+Never: edit expected.json or the samples.
+Expected: 20/20 end Valid or NeedsReview; samples 08, 10 and 17 stay NeedsReview with their values as written.
 ```
 
 ## Day 2 — Build-a-Skill challenge
