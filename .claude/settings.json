@@ -16,7 +16,8 @@
     ],
     "ask": [
       "Bash(git push *)",
-      "mcp__render__create_postgres"
+      "mcp__render__create_postgres",
+      "mcp__plugin_render_render__create_postgres"
     ],
     "deny": [
       "Read(./.env)",
@@ -32,7 +33,15 @@
       "mcp__render__update_web_service",
       "mcp__render__update_static_site",
       "mcp__render__update_cron_job",
-      "mcp__render__update_environment_variables"
+      "mcp__render__update_environment_variables",
+      "mcp__plugin_render_render__create_web_service",
+      "mcp__plugin_render_render__create_static_site",
+      "mcp__plugin_render_render__create_cron_job",
+      "mcp__plugin_render_render__create_key_value",
+      "mcp__plugin_render_render__update_web_service",
+      "mcp__plugin_render_render__update_static_site",
+      "mcp__plugin_render_render__update_cron_job",
+      "mcp__plugin_render_render__update_environment_variables"
     ]
   },
   "hooks": {
