@@ -13,7 +13,7 @@ process.stdin.on("end", () => {
     cmd = j.tool_input?.command ?? "";
     file = j.tool_input?.file_path ?? j.tool_input?.path ?? "";
   } catch { process.exit(0); }
-  const secret = /(^|[^\w])\.env(\.[\w]+)?([^\w.]|$)|secrets[\/\\]|id_rsa|\.pem\b/;
+  const secret = /(^|[^\w\\])\.env(\.[\w]+)?([^\w.]|$)|secrets[\/\\]|id_rsa|\.pem\b/;
   const text = (tool === "Bash" ? cmd : file).replaceAll(".env.example", "");
   if (secret.test(text)) {
     console.error("Blocked by hook: this touches a secret file (.env, secrets/, keys). Ask a person to check it.");
