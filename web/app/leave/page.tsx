@@ -39,8 +39,8 @@ export default function Leave() {
       </form>
       <div className="card">
         <h2>Leave requests</h2>
-        <table><thead><tr><th>ID</th><th>Employee</th><th>From</th><th>To</th><th>Half day</th><th>Status</th><th>Reason</th><th></th></tr></thead>
-          <tbody>{rows.map(r => <tr key={r.id}><td>{r.id}</td><td>{r.employeeId}</td><td>{r.startDate}</td><td>{r.endDate}</td><td>{r.halfDay}</td><td>{r.status}</td><td>{r.reason}</td>
+        <table><thead><tr><th>ID</th><th>Employee</th><th>From</th><th>To</th><th>Half day</th><th>Days</th><th>Status</th><th>Reason</th><th></th></tr></thead>
+          <tbody>{rows.map(r => <tr key={r.id}><td>{r.id}</td><td>{r.employeeId}</td><td>{r.startDate}</td><td>{r.endDate}</td><td>{r.halfDay}</td><td>{r.days}</td><td>{r.status}</td><td>{r.reason}</td>
             <td>{canDecide(r) && <><button type="button" onClick={() => decide(r.id, "approve")}>Approve</button> <button type="button" onClick={() => decide(r.id, "reject")}>Reject</button></>}</td></tr>)}</tbody>
         </table>
       </div>
