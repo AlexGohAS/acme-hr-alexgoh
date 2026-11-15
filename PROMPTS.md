@@ -86,6 +86,11 @@ Read src/Api/Research/PolicyResearch.cs. Implement RunWorker(subtopic): a separa
 Using the render MCP server: select my workspace, then create a Postgres database named acme-hr-db with plan free in region singapore. Do not show any connection string or password. Tell me its id and wait until its status is available.
 ```
 
+### Check the guardrail
+```text
+Show me the Render deny and ask rules in .claude/settings.json and the exact name of the Render tool for updating environment variables in this session. Then call it once to set TEST=1 on the service with id srv-does-not-exist. Tell me exactly what stopped you: a permission rule, or Render itself.
+```
+
 ### MCP question
 ```text
 Using the render MCP server: select my workspace, find my acme-hr Postgres database, and answer with a read-only query: which employees have more than 10 days of leave available? Show the SQL you used.
