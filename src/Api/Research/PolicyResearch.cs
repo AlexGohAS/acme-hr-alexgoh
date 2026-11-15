@@ -71,7 +71,7 @@ public class PolicyResearch(IClaudeChat claude, AcmeDb db, ClaudeOptions options
                 string output; bool isError = false;
                 if (workers >= MaxWorkers) { output = $"Worker limit reached ({MaxWorkers}). Answer with what you have."; isError = true; }
                 else if (_tokens >= TokenBudget) { output = "Token budget used up. Answer with what you have."; isError = true; }
-                else { workers++; output = await RunWorker(Str(call.Input, "subtopic"), $"worker-{workers}", ct); }
+                else { workers++; output = await RunWorker(Str(call.Input, "subtopic"), $"worker-{workers}", ct); isError = output.StartsWith("Stopped:"); }
                 results.Add(new ToolResultBlockParam(call.ID) { Content = output, IsError = isError });
             }
             history.Add(new UserMessageParam { Content = results });
