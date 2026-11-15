@@ -5,12 +5,11 @@
 **Branch:** `git checkout lab4-start` · Solution: `lab5-start`.
 
 ## Before you start
-- Render → Account Settings → **API Keys** → create one. Set it in your shell before starting `claude` (not in `.env`):
-  `export RENDER_API_KEY=...` (macOS/Linux/Git Bash) or `$env:RENDER_API_KEY="..."` (PowerShell).
-- The key can change your whole Render account, so `.claude/settings.json` **denies** every Render MCP tool that creates or updates something, except `create_postgres`, which **asks** you first. Claude can create your database once, with your approval, and otherwise only read.
+- No API key needed. The repo's `.mcp.json` connects to Render's MCP server (`https://mcp.render.com/mcp`), and you sign in with your Render account in the browser (OAuth). This is the same server the Render plugin uses (`/plugin install render@claude-plugins-official`); use one or the other, not both.
+- Signing in gives Claude access to your whole Render workspace, so `.claude/settings.json` **denies** every Render MCP tool that creates or updates something, except `create_postgres`, which **asks** you first. The rules cover both the repo server (`mcp__render__…`) and the plugin (`mcp__plugin_render_render__…`).
 
 ## Steps
-1. Start `claude` (approve the `render` server once), run `/mcp`: `render` should be connected.
+1. Start `claude` and approve the `render` server once. Run `/mcp` → `render` → **Authenticate**, sign in to Render in the browser and approve. `/mcp` should then show `render` connected.
    - Paste **Create the database**. Approve the `create_postgres` call when Claude asks. Check it says plan `free`, region `singapore`.
    - When it is available: in the Render dashboard, `acme-hr-db` → Connect → copy the **External Database URL** into `.env` as `DATABASE_URL` yourself (Claude never handles it). Restart the API once: it creates and seeds the tables.
    - Paste **MCP question**.
