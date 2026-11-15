@@ -119,9 +119,8 @@ public class PolicyResearch(IClaudeChat claude, AcmeDb db, ClaudeOptions options
 
     async Task<string> SearchAsync(string query)
     {
-        var words = query.ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var all = await db.Policies.ToListAsync();
-        var hits = all.Where(p => words.Any(w => (p.Title + " " + p.Body).ToLowerInvariant().Contains(w))).Select(p => new { p.Id, p.Title }).Take(5);
+        var hits = PolicySearch.Find(all, query, 5).Select(p => new { p.Id, p.Title });
         return JsonSerializer.Serialize(hits);
     }
 
