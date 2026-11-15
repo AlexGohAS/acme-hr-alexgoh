@@ -5,6 +5,10 @@
 # commit histories". This replaces your branches with the template's real history.
 # Run it before you change anything. Your .env is not touched.
 set -e
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Stopped: you have uncommitted changes (see git status). Commit or stash them first. Nothing was changed." >&2
+  exit 1
+fi
 TEMPLATE=https://github.com/anchor-academy/acme-hr-workshop-net.git
 BRANCHES="main lab1-start lab2-start lab3-start lab4-start lab5-start lab5-planted-bug lab6-start final"
 git remote get-url template >/dev/null 2>&1 || git remote add template "$TEMPLATE"

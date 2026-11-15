@@ -6,7 +6,7 @@ public static class WorkingDays
     public static int Count(DateOnly start, DateOnly end)
     {
         if (end < start) return 0;
-        // BUG (starter): weekends are not skipped. A test in LeaveServiceTests shows it.
+        // BUG (starter): weekends are not skipped. The failing test WorkingDaysTests.Friday_to_Monday_counts_two_working_days shows it.
         return end.DayNumber - start.DayNumber + 1;
     }
 }
