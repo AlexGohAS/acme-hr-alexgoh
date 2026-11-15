@@ -6,7 +6,7 @@ permissions:
   pull-requests: write
 jobs:
   claude-review:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # pinned: ubuntu-latest moves to a new image on its own
     timeout-minutes: 10                 # time limit
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -20,10 +20,16 @@ jobs:
             echo "::error::ANTHROPIC_API_KEY secret is missing. Add it in Settings > Secrets and variables > Actions."
             exit 1
           fi
+          # One free call that only checks the key works (lists models). The key is never printed.
+          code=$(curl -s -o /dev/null -w "%{http_code}" https://api.anthropic.com/v1/models -H "x-api-key: $ANTHROPIC_API_KEY" -H "anthropic-version: 2023-06-01")
+          if [ "$code" != "200" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret does not work (HTTP $code). Set it again with: gh secret set ANTHROPIC_API_KEY, then re-run this job."
+            exit 1
+          fi
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
       - name: Install Claude Code
-        run: npm install -g @anthropic-ai/claude-code
+        run: npm install -g @anthropic-ai/claude-code@2.1.316   # pinned so a new release cannot change the lab mid-workshop
       - name: Review the pull request (headless)
         run: |
           git diff origin/${{ github.base_ref }}...HEAD > pr.diff
@@ -35,7 +41,11 @@ jobs:
           claude -p "$PROMPT" \
             --output-format json \
             --max-turns 12 \
-            --allowedTools "Read,Grep,Glob" > review.json
+            --allowedTools "Read,Grep,Glob" > review.json || {
+              echo "::error::Claude Code stopped with an error. Details below (no secrets)."
+              jq '{subtype, is_error, result}' review.json 2>/dev/null || head -c 800 review.json
+              exit 1
+            }
       - name: Post review, record cost, enforce verdict
         run: |
           SUBTYPE=$(jq -r '.subtype // "n/a"' review.json)
@@ -47,7 +57,7 @@ jobs:
           RESULT=$(jq -r '.result' review.json)
           COST=$(jq -r '.total_cost_usd // "n/a"' review.json)
           TURNS=$(jq -r '.num_turns // "n/a"' review.json)
-          printf "%s\n\n_Claude review · turns: %s · cost: US\$%s_\n" "$RESULT" "$TURNS" "$COST" > comment.md
+          printf "%s\n\n_Claude review · each finding names file:line · turns: %s · cost: US\$%s_\n" "$RESULT" "$TURNS" "$COST" > comment.md
           gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md
           echo "### Claude review: turns $TURNS, cost US\$$COST" >> "$GITHUB_STEP_SUMMARY"
           echo "$RESULT" | tail -1 | grep -q "VERDICT: PASS" || { echo "::error::Claude review verdict is FAIL"; exit 1; }
