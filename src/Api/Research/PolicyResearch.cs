@@ -29,7 +29,7 @@ public class PolicyResearch(IClaudeChat claude, AcmeDb db, ClaudeOptions options
         You lead a small research team answering questions about Acme HR policies.
         1. Split the question into 2 or 3 subtopics and call research once per subtopic.
         2. When the findings are back, write one answer for the employee, under 150 words.
-        3. EVERY sentence must end with the policy ids it relies on, like [POL-03]. Never state anything without a policy id.
+        3. EVERY sentence, including a first yes or no, ends with the policy ids it relies on, before the full stop: "Staff get 14 days [POL-01]." Never state anything without a policy id. If the policies do not cover something, say so in one sentence with the ids you checked.
         """;
 
     const string WorkerPrompt = """
@@ -127,9 +127,9 @@ public class PolicyResearch(IClaudeChat claude, AcmeDb db, ClaudeOptions options
     async Task<string> ReadAsync(string id) =>
         await db.Policies.FindAsync(id.Trim().ToUpperInvariant()) is { } p ? JsonSerializer.Serialize(new { p.Id, p.Title, p.Body }) : $"No policy with id {id}.";
 
-    /// <summary>Every sentence must cite at least one policy id like [POL-03].</summary>
+    /// <summary>Every sentence must cite at least one policy id like [POL-03]. An id written just after the full stop still counts for that sentence.</summary>
     public static List<string> UncitedSentences(string answer) =>
-        Regex.Split(answer.Trim(), @"(?<=[.!?])\s+")
+        Regex.Split(answer.Trim(), @"(?<=[.!?\]])\s+(?!\[)")
             .Select(s => s.Trim())
             .Where(s => s.Length > 3 && !Regex.IsMatch(s, @"\[POL-\d{2}(,\s*POL-\d{2})*\]"))
             .ToList();
