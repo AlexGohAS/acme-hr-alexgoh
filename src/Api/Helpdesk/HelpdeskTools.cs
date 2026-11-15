@@ -56,10 +56,8 @@ public class HelpdeskTools(AcmeDb db, LeaveService leave)
 
     async Task<ToolOutcome> CheckPolicyAsync(string topic)
     {
-        var words = topic.ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var all = await db.Policies.ToListAsync();
-        var hits = all.Where(p => words.Any(w => (p.Title + " " + p.Body).ToLowerInvariant().Contains(w)))
-            .Take(3).Select(p => new { p.Id, p.Title, p.Body }).ToList();
+        var hits = PolicySearch.Find(all, topic, 3).Select(p => new { p.Id, p.Title, p.Body }).ToList();
         return Ok(hits.Count > 0 ? hits : new object[] { new { message = "No matching policy. Escalate to HR." } });
     }
 
