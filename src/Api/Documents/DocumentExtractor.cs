@@ -54,22 +54,34 @@ public class DocumentExtractor(IClaudeChat claude, ClaudeOptions options)
         },
     }).EnumerateObject().ToDictionary(p => p.Name, p => p.Value);
 
-    public async Task<ExtractionResult> ExtractAsync(string documentText, CancellationToken ct = default)
+    /// <summary>The first message: the PDF as a document block (Claude reads its text and its pages as images), then the ask.</summary>
+    public static UserMessageParam DocumentMessage(byte[] pdf) => new()
     {
-        var history = new List<MessageParam> { new UserMessageParam { Content = $"<document>\n{documentText}\n</document>" } };
+        Content = new List<ContentBlockParam>
+        {
+            new DocumentBlockParam { Source = new Base64PdfSource { Data = Convert.ToBase64String(pdf) } },
+            new TextBlockParam { Text = "Extract the data from this document." },
+        },
+    };
+
+    public async Task<ExtractionResult> ExtractAsync(byte[] pdf, CancellationToken ct = default)
+    {
+        var history = new List<MessageParam> { DocumentMessage(pdf) };
 
         // TODO (Lab 6): this first version trusts whatever comes back. Make it safe:
         //  1. Send OutputConfig = new OutputConfig { Format = new JsonOutputFormat { Schema = Schema } }.
         //  2. Handle a stop_reason other than end_turn: return NeedsReview.
         //  3. Parse the text into Extraction (catch JsonException) and run DocumentValidator.Check.
         //  4. If there are problems, retry ONCE: add Claude's answer and the exact problems to history.
+        //     Say "correct only reading mistakes; if the document itself is wrong, keep its values as written".
+        //     Otherwise Claude may "fix" a wrong document (samples 08, 10, 17) so the checks pass.
         //  5. Still failing, or kind "other": return NeedsReview with the problems. Max MaxAttempts calls.
         var res = await claude.SendAsync(new MessageCreateParams
         {
             Model = options.Model,
             MaxTokens = 1024,
             System = Prompt,
-            Messages = history,
+            Messages = history.ToList(),
         }, ct);
 
         var text = string.Concat(res.Content.Select(b => b.TryPickText(out var t) ? t.Text : ""));

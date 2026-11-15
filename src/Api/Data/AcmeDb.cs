@@ -13,6 +13,7 @@ public class AcmeDb(DbContextOptions<AcmeDb> options) : IdentityDbContext<Identi
     public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
     public DbSet<Policy> Policies => Set<Policy>();
     public DbSet<StoredDocument> Documents => Set<StoredDocument>();
+    public DbSet<StoredDocumentFile> DocumentFiles => Set<StoredDocumentFile>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -20,6 +21,7 @@ public class AcmeDb(DbContextOptions<AcmeDb> options) : IdentityDbContext<Identi
         b.Entity<LeaveRequest>().Property(x => x.HalfDay).HasConversion<string>();
         b.Entity<LeaveRequest>().Property(x => x.Status).HasConversion<string>();
         b.Entity<StoredDocument>().Property(x => x.Status).HasConversion<string>();
+        b.Entity<StoredDocumentFile>().HasKey(x => x.DocumentId);
         b.Entity<Employee>().Property(x => x.AnnualEntitlement).HasPrecision(5, 1);
     }
 }

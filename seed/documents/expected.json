@@ -1,5 +1,5 @@
 {
-  "01-mc.txt": {
+  "01-mc.pdf": {
     "kind": "medical_certificate",
     "status": "Valid",
     "fields": {
@@ -10,7 +10,7 @@
       "days": 2
     }
   },
-  "02-mc.txt": {
+  "02-mc.pdf": {
     "kind": "medical_certificate",
     "status": "Valid",
     "fields": {
@@ -21,7 +21,7 @@
       "days": 1
     }
   },
-  "03-mc.txt": {
+  "03-mc.pdf": {
     "kind": "medical_certificate",
     "status": "Valid",
     "fields": {
@@ -32,7 +32,7 @@
       "days": 3
     }
   },
-  "04-mc.txt": {
+  "04-mc.pdf": {
     "kind": "medical_certificate",
     "status": "Valid",
     "fields": {
@@ -43,7 +43,7 @@
       "days": 2
     }
   },
-  "05-mc.txt": {
+  "05-mc.pdf": {
     "kind": "medical_certificate",
     "status": "Valid",
     "fields": {
@@ -54,7 +54,7 @@
       "days": 3
     }
   },
-  "06-mc.txt": {
+  "06-mc.pdf": {
     "kind": "medical_certificate",
     "status": "Valid",
     "fields": {
@@ -65,7 +65,7 @@
       "days": 2
     }
   },
-  "07-mc.txt": {
+  "07-mc.pdf": {
     "kind": "medical_certificate",
     "status": "Valid",
     "fields": {
@@ -76,7 +76,7 @@
       "days": 1
     }
   },
-  "08-mc.txt": {
+  "08-mc.pdf": {
     "kind": "medical_certificate",
     "status": "NeedsReview",
     "fields": {
@@ -87,7 +87,7 @@
       "days": 2
     }
   },
-  "09-mc.txt": {
+  "09-mc.pdf": {
     "kind": "medical_certificate",
     "status": "Valid",
     "fields": {
@@ -98,7 +98,7 @@
       "days": 2
     }
   },
-  "10-mc.txt": {
+  "10-mc.pdf": {
     "kind": "medical_certificate",
     "status": "NeedsReview",
     "fields": {
@@ -109,7 +109,7 @@
       "days": 0
     }
   },
-  "11-claim.txt": {
+  "11-claim.pdf": {
     "kind": "expense_claim",
     "status": "Valid",
     "fields": {
@@ -122,7 +122,7 @@
       "total": 59.7
     }
   },
-  "12-claim.txt": {
+  "12-claim.pdf": {
     "kind": "expense_claim",
     "status": "Valid",
     "fields": {
@@ -135,7 +135,7 @@
       "total": 518.4
     }
   },
-  "13-claim.txt": {
+  "13-claim.pdf": {
     "kind": "expense_claim",
     "status": "Valid",
     "fields": {
@@ -148,7 +148,7 @@
       "total": 129.9
     }
   },
-  "14-claim.txt": {
+  "14-claim.pdf": {
     "kind": "expense_claim",
     "status": "Valid",
     "fields": {
@@ -161,7 +161,7 @@
       "total": 197.16
     }
   },
-  "15-claim.txt": {
+  "15-claim.pdf": {
     "kind": "expense_claim",
     "status": "Valid",
     "fields": {
@@ -174,7 +174,7 @@
       "total": 354.0
     }
   },
-  "16-claim.txt": {
+  "16-claim.pdf": {
     "kind": "expense_claim",
     "status": "Valid",
     "fields": {
@@ -187,7 +187,7 @@
       "total": 272.5
     }
   },
-  "17-claim.txt": {
+  "17-claim.pdf": {
     "kind": "expense_claim",
     "status": "NeedsReview",
     "fields": {
@@ -200,7 +200,7 @@
       "total": 26.44
     }
   },
-  "18-claim.txt": {
+  "18-claim.pdf": {
     "kind": "expense_claim",
     "status": "Valid",
     "fields": {
@@ -213,12 +213,12 @@
       "total": 120.84
     }
   },
-  "19-other.txt": {
+  "19-other.pdf": {
     "kind": "other",
     "status": "NeedsReview",
     "fields": {}
   },
-  "20-other.txt": {
+  "20-other.pdf": {
     "kind": "other",
     "status": "NeedsReview",
     "fields": {}
