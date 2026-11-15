@@ -29,7 +29,7 @@ Everyone builds their own copy of Acme HR. Your team sits together, helps each o
 ## Sign in (training accounts)
 
 Every seeded employee can sign in with their work email and the shared training password **`Acme@2026`**
-(set `SEED_USER_PASSWORD` in `.env` to change it before the first run). Use these four:
+(set `SEED_USER_PASSWORD` in `.env` to change it before the first run). Your live app (Lab 5) uses your own private password instead: see Lab 4 step 4.4. Use these four:
 
 | Who | Email | Roles | Can do |
 |---|---|---|---|
@@ -57,7 +57,7 @@ Each lab starts from the previous lab's finished code. Behind? Check out the nex
 
 Finished system (all labs done): branch `final`.
 
-**All prompts:** [PROMPTS.md](PROMPTS.md) — copy and paste, no typing.
+**All prompts:** [PROMPTS.md](PROMPTS.md) — copy and paste, no typing. Step numbers (1.2, 4.5 …) are the same in the lab guides, PROMPTS.md and the trainer's dry run.
 
 **Starter templates for your own repos:** [templates/ on the `final` branch](https://github.com/anchor-academy/acme-hr-workshop-net/tree/final/templates)
 
