@@ -7,15 +7,15 @@
 ## Steps
 1.1 `git checkout lab1-start` and run `dotnet test`. One test fails: the weekend working-days bug. Read `CLAUDE.md`, `.claude/rules/` and `.claude/settings.json`. Which lines are instructions, and which are enforced?
 
-1.2 Start `claude` (accept the trust dialog the first time), switch to plan mode (Shift+Tab until the footer says plan mode), paste **Plan prompt**. Review the plan and ask for one change.
+1.2 Start `claude` (accept the trust dialog the first time), switch to plan mode (Shift+Tab until the footer says plan mode), paste **Plan prompt**. Review the plan and ask for one change. When you approve it, choose **auto-accept edits**: otherwise Claude asks about 18 times while building.
 
-1.3 Approve and paste **Build it**. Watch the test hook run after each edit to a `.cs` file.
+1.3 Stop the API first (Ctrl+C in its terminal; on Windows a running API breaks the build). Approve and paste **Build it**. Watch the test hook run after each edit to a `.cs` file. After the web build, restart `npm --prefix web run dev`, or the pages go blank.
 
 1.4 Paste **Try to break the rules**. It tests the protection with `src/.env`, a file that does not exist, from the repo root and from `web/`. All 4 attempts must be stopped. Either message counts: "denied by your permission settings" (a deny rule) or "Blocked by hook". Three layers are at work: the CLAUDE.md instruction (Claude may refuse on its own), the `Read` deny rules and the PreToolUse hook `scripts/block-secrets.js`. Only the last two are enforced.
    - If any attempt says "File does not exist" or prints `hook-test`, the protection is off: stop and call a trainer.
    - Never test with your real `.env`. If a protection fails, your API key goes into the session and you must rotate it in the Console.
 
-1.5 Run the API and the web app (Windows: stop the API before `dotnet test`). Sign in as Farah (`farah.tan6@acme-hr.example`) and on **Leave** create:
+1.5 Start the API and the web app again, each in its own terminal. Sign in as Farah (`farah.tan6@acme-hr.example`) and on **Leave** create:
    - Thu 3 Dec – Fri 4 Dec 2026: 2 days, **Approved** at once
    - Mon 14 Dec – Fri 18 Dec 2026: 5 days, **Pending**
 

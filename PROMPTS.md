@@ -6,7 +6,8 @@ Each lab prompt says the exact values to use, what to check, what never to do, t
 
 **Machine notes**
 - Windows: stop the API (Ctrl+C) before `dotnet test` or a build. A running API locks `src/Api/bin` and the build fails with MSB3027 (the test hook then says "Tests failing" with no test names).
-- Claude Code can stop background dev servers when memory is low. If a page stops loading, start the API or web app again.
+- Run the API and the web app in two terminals of your own, not through Claude: servers Claude starts in the background stop after about 10 minutes.
+- `npm run build` overwrites the web dev server's files. Restart `npm --prefix web run dev` after a build, or every page goes blank.
 - Never paste a key, password, database URL or deploy hook into Claude. Put them in `.env` with your editor, or use `gh secret set` in your own terminal.
 
 ## Setup
@@ -60,6 +61,7 @@ Read docs/feature-spec-leave.md, src/Api/Services/LeaveService.cs, src/Api/Auth/
 ### Build it (1.3)
 ```text
 Go ahead with the plan. Write the tests first, then the code, including API tests in src/Api.Tests that another employee gets 403 on approve. Keep controllers thin. When the API is done, add the create form and Approve / Reject buttons to web/app/leave/page.tsx using web/lib/api.ts; show each request's days from the API and the available balance. Then run npm --prefix web run build to check the page compiles.
+If a build fails with MSB3027, stop and tell me to stop the API; do not work around it.
 Never: open .env, change the planted tests to make them pass, push.
 Expected: every test passes, including the weekend test that failed at the start, and the web build succeeds. If a test fails for a reason outside this lab, stop and tell me.
 ```
@@ -101,7 +103,7 @@ Expected: all tests pass, including the 2 research tests that failed at the star
 ### Ask a research question (3.4)
 ```text
 The API is running. Signed in as farah.tan6@acme-hr.example (password in README.md), call the policy research endpoint with: "Can I carry forward leave and take it as half days?" Show the answer, the policy id cited for each claim, citationsValid, stoppedBy, the number of workers and turns against MaxWorkers and MaxTurnsPerWorker, and tokens per agent. Do not print the token.
-Expected: citationsValid true, stoppedBy end_turn, inside the limits, every claim cites POL-xx.
+Expected: citationsValid true, stoppedBy end_turn, inside the limits, every claim cites POL-xx. If the lead's first answer had an uncited sentence, the code gives it one repair turn (the lead shows one extra turn): that is expected.
 ```
 
 ## Lab 4 — Team productivity
@@ -115,13 +117,15 @@ Stop and ask me if: there is more than one workspace, a free database already ex
 ### Check the database (4.5)
 ```text
 I have put DATABASE_URL in .env myself. Do not open .env. Restart the API and call http://localhost:5080/health. Tell me the provider and the database line.
-Expected: "provider":"Npgsql.EntityFrameworkCore.PostgreSQL" and database connected. If it says Sqlite, stop: .env was not saved or the API did not restart. If it says NOT connected, stop: check the IP allow list.
+Then check that signing in as farah.tan6@acme-hr.example with the public password Acme@2026 returns 401.
+Expected: "provider":"Npgsql.EntityFrameworkCore.PostgreSQL", database connected, and 401 for Acme@2026. If it says Sqlite, stop: .env was not saved or the API did not restart. If it says NOT connected, stop: check the IP allow list. If the API does not start and says SEED_USER_PASSWORD must be set, set your private password in .env.
 ```
 
 ### MCP question (4.5)
 ```text
-Using the render MCP server: select my workspace, find my acme-hr-db Postgres database, and answer with a read-only query: which employees have more than 10 days of leave available? Show the SQL you used. Do not change any data.
+Using the render MCP server: select my workspace and find my acme-hr-db Postgres database. With get_postgres, show its status, plan, region, version and expiry date. With get_metrics, show its recent CPU or active connections, whichever it offers. Do not run SQL and do not change anything.
 ```
+Why no SQL: Render's MCP server queries from Render's own machines, which have no fixed IP, so your database's IP allow list (only your laptop) blocks it. That is the allow list working.
 
 ### Check the guardrail (4.6)
 ```text
@@ -154,7 +158,7 @@ Write release notes for this release.
 ```text
 Open a pull request from lab5-planted-bug to main with gh pr create, title "Lab 5: planted bug". Show me the files changed. Wait for the checks with gh pr checks --watch and tell me the result of ci and claude-review. Do not merge.
 Expected: only CoreControllers.cs and LeaveService.cs changed; ci passes; claude-review fails and posts one comment in the Conversation tab.
-If claude-review fails within seconds and there is no comment, stop: the ANTHROPIC_API_KEY secret is wrong.
+If claude-review fails and there is no comment on the pull request, stop: the ANTHROPIC_API_KEY secret is wrong or on another repo. A correct review also fails in about 30 seconds: look for the comment, not the time.
 ```
 
 ### Fix the planted bug (5.6)
@@ -163,13 +167,13 @@ The claude-review check failed on my pull request. Here is the review comment:
 
 <paste the review comment from the pull request>
 
-Write failing tests that show the bug: one test each for Approved, Pending and Rejected. Then fix it. Run the tests and tell me which ran. Do not push.
+Fix every blocking finding in the comment, not only the first. Start with failing tests: one each for Approved, Pending and Rejected leave, one that another employee gets 403, and one that an unknown employee id gets 404. Run them and show me they fail, then fix the code until they pass. Run all tests and tell me which ran. Do not push.
 ```
 
 ### Check the deploy (5.7)
 ```text
 Run gh run list --branch main --limit 5, then show the log of the latest deploy run with gh run view --log. Tell me if the deploy step printed a deploy id that starts with dep-. Do not print any secret.
-Expected: {"deploy":{"id":"dep-..."}}. If it says RENDER_DEPLOY_HOOK not set, the deploy was skipped even though the run is green: stop and set the secret.
+Expected: {"deploy":{"id":"dep-..."}}. Look only for dep-: the log also shows the script's own text "RENDER_DEPLOY_HOOK not set", which means nothing. No dep- id means the deploy was skipped even though the run is green: stop and check the secret with gh secret list.
 ```
 
 ## Lab 6 — Document intake
