@@ -1,10 +1,10 @@
-# Alternative deployment: Vercel + Neon (if Render is down)
+# Alternative deployment: Vercel + Neon or Supabase (if Render is down)
 
 Use this only when the trainer says so. The labs are written for Render; this page changes **Lab 4 step 4.2–4.5** (database) and **Lab 5 steps 5.2–5.3 and 5.7** (hosting and deploy). Everything else stays the same, including the CI gates.
 
 | Part | Render (normal) | Fallback |
 |---|---|---|
-| Database | Render Postgres (Lab 4) | **Neon** Postgres, Singapore (`aws-ap-southeast-1`), created from Vercel |
+| Database | Render Postgres (Lab 4) | **Neon** Postgres, Singapore (`aws-ap-southeast-1`), created from Vercel (step A), or **Supabase** Postgres, Singapore (step A2) |
 | API + web app | Render Docker service from `render.yaml` | **Vercel** Container runtime from `Dockerfile.vercel` (repo root, from `lab5-start` on) |
 | Deploy after CI | `deploy.yml` calls `RENDER_DEPLOY_HOOK` | Vercel deploys `main` itself when it changes. `main` is protected, so only merged pull requests that passed `ci` and `claude-review` get there |
 
@@ -25,13 +25,25 @@ Use this only when the trainer says so. The labs are written for Render; this pa
 4. For local work (Lab 4): copy the same connection string into `.env` as `DATABASE_URL`, in your editor, never in chat. Neon needs no IP allow-list step. Set `SEED_USER_PASSWORD` in `.env` to your private password, as in step 4.4.
 5. Restart the API. `/health` must show `"provider":"Npgsql.EntityFrameworkCore.PostgreSQL"`.
 
+## A2. Database on Supabase instead of Neon (also free)
+Use either A or A2, not both.
+1. Sign in to supabase.com with GitHub → **New project**: name `acme-hr`, region **Southeast Asia (Singapore)**, free plan. Choose a database password with letters and digits only (characters such as `@ # / ? :` break the URL unless encoded). Keep it in your password manager, never in chat.
+2. Project → **Connect** → choose the **Session pooler** string (host `aws-0-ap-southeast-1.pooler.supabase.com`, port `5432`, user `postgres.<project-ref>`). Replace `[YOUR-PASSWORD]` with your password.
+   - Not the **Direct connection** (`db.<ref>.supabase.co`): it is IPv6-only, and Vercel and most laptops connect over IPv4. The symptom is `/health` saying NOT connected.
+   - Not the **Transaction pooler** (port `6543`): the app keeps one session per request, which the session pooler fits.
+3. Vercel project → **Settings → Environment Variables** → add `DATABASE_URL` = that Session pooler string (Production). Do not rely on a Vercel–Supabase integration to set `DATABASE_URL`; check it is there.
+4. For local work (Lab 4): the same string into `.env` as `DATABASE_URL`, plus your private `SEED_USER_PASSWORD`, in your editor. No IP allow-list step.
+5. Restart the API. `/health` must show `"provider":"Npgsql.EntityFrameworkCore.PostgreSQL"`. Supabase's **Table Editor** then shows the `Employees` and `AspNetUsers` tables.
+
+Free plan: 2 active projects, 500 MB each, and a project **pauses after 7 days without activity** (resume it from the dashboard). Not yet tested against a real Supabase project: include it in the trial deploy.
+
 ## B. Hosting (replaces Lab 5 steps 5.2–5.3)
 1. Project → **Settings → Environment Variables**, environment **Production**. Add by hand, never through Claude:
    - `PORT` = `8080` (the .NET image listens on 8080; Vercel's default is 80)
    - `ANTHROPIC_API_KEY` = your key with a spend limit
    - `SEED_USER_PASSWORD` = the same private password as in your `.env`
-   - `DATABASE_URL` is already there from step A
-2. Project → **Settings → Functions → Function Region**: **Singapore (sin1)**, next to the database.
+   - `DATABASE_URL` is already there from step A (Neon) or A2 (Supabase)
+2. Project → **Settings → Functions → Function Region**: **Singapore (sin1)**, next to the database (Neon and Supabase are both in Singapore).
 3. `Dockerfile.vercel` at the repo root makes Vercel use its Container preset. If the project shows another framework, run `npx vercel@latest project update --framework container --yes` in the repo folder.
 4. Project → **Settings → Git → Production Branch**: `main`.
 5. GitHub → your repo → **Settings → Secrets and variables → Actions**: delete `RENDER_DEPLOY_HOOK` if you added it. `deploy.yml` then prints "skipping API deploy" and stays green; Vercel deploys instead.
@@ -47,4 +59,4 @@ After you merge the Lab 5 fix: Vercel → **Deployments** shows a **Production**
 Unchanged. On the live site use `https://<project>.vercel.app/app/documents/` and `/app/review/`.
 
 ## After the workshop
-Delete the Vercel project and the Neon database, and delete or limit the Anthropic key you gave to Vercel and GitHub.
+Delete the Vercel project and the Neon database or Supabase project, and delete or limit the Anthropic key you gave to Vercel and GitHub.
