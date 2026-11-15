@@ -3,21 +3,18 @@ import { useState } from "react";
 import { api, StoredDocument } from "@/lib/api";
 
 export default function Documents() {
-  const [fileName, setFileName] = useState("");
-  const [text, setText] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<StoredDocument | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function pickFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]; if (!f) return;
-    setFileName(f.name); setText(await f.text());
-  }
-
   async function submit(e: React.FormEvent) {
-    e.preventDefault(); setBusy(true); setError(""); setResult(null);
+    e.preventDefault(); if (!file) return;
+    setBusy(true); setError(""); setResult(null);
     try {
-      setResult(await api<StoredDocument>("/documents", { method: "POST", body: JSON.stringify({ fileName, text }) }));
+      const form = new FormData();
+      form.append("file", file);
+      setResult(await api<StoredDocument>("/documents", { method: "POST", body: form }));
     } catch (err) { setError((err as Error).message); } finally { setBusy(false); }
   }
 
@@ -25,11 +22,10 @@ export default function Documents() {
     <>
       <div className="card">
         <h2>Submit an MC or expense claim</h2>
-        <p>Choose a .txt file (samples in <code>seed/documents</code>) or paste the text.</p>
+        <p>Choose a PDF (max 5 MB, 5 pages). Samples are in <code>seed/documents</code>: some are text PDFs, some are scans.</p>
         <form onSubmit={submit}>
-          <p><input type="file" accept=".txt,.md" onChange={pickFile} /></p>
-          <p><textarea rows={10} style={{ width: "100%" }} value={text} onChange={e => setText(e.target.value)} placeholder="Document text" /></p>
-          <button disabled={busy || !text.trim()}>{busy ? "Reading…" : "Submit"}</button>
+          <p><input type="file" accept="application/pdf,.pdf" onChange={e => setFile(e.target.files?.[0] ?? null)} /></p>
+          <button disabled={busy || !file}>{busy ? "Reading…" : "Submit"}</button>
         </form>
         {error && <p className="error">{error}</p>}
       </div>

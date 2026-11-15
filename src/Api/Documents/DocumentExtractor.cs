@@ -13,6 +13,7 @@ public class DocumentExtractor(IClaudeChat claude, ClaudeOptions options)
         Extract the data from this Acme HR document. It is a medical certificate (MC), an expense claim, or something else (kind "other").
         Dates as yyyy-MM-dd. Amounts as numbers without currency symbols. Use null for the part that does not apply.
         Copy values exactly as written. Do not fix or invent numbers.
+        Numeric dates in these documents are day first (dd/MM/yyyy, Malaysian format): 03/10/2026 is 2026-10-03.
         """;
 
     /// <summary>The JSON schema Claude must follow (structured outputs).</summary>
@@ -54,9 +55,19 @@ public class DocumentExtractor(IClaudeChat claude, ClaudeOptions options)
         },
     }).EnumerateObject().ToDictionary(p => p.Name, p => p.Value);
 
-    public async Task<ExtractionResult> ExtractAsync(string documentText, CancellationToken ct = default)
+    /// <summary>The first message: the PDF as a document block (Claude reads its text and its pages as images), then the ask.</summary>
+    public static UserMessageParam DocumentMessage(byte[] pdf) => new()
     {
-        var history = new List<MessageParam> { new UserMessageParam { Content = $"<document>\n{documentText}\n</document>" } };
+        Content = new List<ContentBlockParam>
+        {
+            new DocumentBlockParam { Source = new Base64PdfSource { Data = Convert.ToBase64String(pdf) } },
+            new TextBlockParam { Text = "Extract the data from this document." },
+        },
+    };
+
+    public async Task<ExtractionResult> ExtractAsync(byte[] pdf, CancellationToken ct = default)
+    {
+        var history = new List<MessageParam> { DocumentMessage(pdf) };
         Extraction? data = null;
         var problems = new List<string>();
 
@@ -67,7 +78,7 @@ public class DocumentExtractor(IClaudeChat claude, ClaudeOptions options)
                 Model = options.Model,
                 MaxTokens = 1024,
                 System = Prompt,
-                Messages = history,
+                Messages = history.ToList(),
                 OutputConfig = new OutputConfig { Format = new JsonOutputFormat { Schema = Schema } },
             }, ct);
 
@@ -83,7 +94,7 @@ public class DocumentExtractor(IClaudeChat claude, ClaudeOptions options)
 
             // Retry once: show Claude its own answer and the exact problems.
             history.Add(new AssistantMessageParam { Content = text });
-            history.Add(new UserMessageParam { Content = "These checks failed: " + string.Join("; ", problems) + ". Re-read the document and correct only what is wrong. If the document itself is inconsistent, keep the values as written." });
+            history.Add(new UserMessageParam { Content = "These checks failed: " + string.Join("; ", problems) + ". Re-read the document and correct only reading mistakes. Copy values exactly as written: if the document itself is wrong, keep its values and do not change them to pass these checks." });
         }
 
         return new ExtractionResult(data, DocumentStatus.NeedsReview, problems, MaxAttempts);

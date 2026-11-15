@@ -7,6 +7,7 @@ namespace Api.Tests;
 public class DocumentExtractorTests
 {
     static readonly ClaudeOptions Opts = new("claude-sonnet-5-5");
+    static readonly byte[] Pdf = "%PDF-1.4\n1 0 obj << /Type /Page >> endobj\n%%EOF"u8.ToArray();
     const string GoodMc = """{"kind":"medical_certificate","medical_certificate":{"employee_name":"Aisyah Rahman","clinic":"Klinik Mesra","date_from":"2026-10-05","date_to":"2026-10-06","days":2},"expense_claim":null}""";
     const string BadMc = """{"kind":"medical_certificate","medical_certificate":{"employee_name":"Aisyah Rahman","clinic":"Klinik Mesra","date_from":"2026-10-05","date_to":"2026-10-06","days":3},"expense_claim":null}""";
     const string GoodClaim = """{"kind":"expense_claim","medical_certificate":null,"expense_claim":{"claim_no":"EC-1","vendor":"Kedai","date":"2026-10-11","currency":"MYR","subtotal":100.00,"tax":6.00,"total":106.00,"items":[{"description":"Book","amount":100.00}]}}""";
@@ -15,7 +16,7 @@ public class DocumentExtractorTests
     public async Task Valid_first_time_is_Valid_with_one_call_and_schema_sent()
     {
         var fake = new FakeClaude(FakeClaude.Text(GoodMc));
-        var r = await new DocumentExtractor(fake, Opts).ExtractAsync("MC text");
+        var r = await new DocumentExtractor(fake, Opts).ExtractAsync(Pdf);
         Assert.Equal(DocumentStatus.Valid, r.Status);
         Assert.Equal(1, r.Attempts);
         Assert.Single(fake.Requests);
@@ -26,7 +27,7 @@ public class DocumentExtractorTests
     public async Task Invalid_then_fixed_retries_once_with_the_error()
     {
         var fake = new FakeClaude(FakeClaude.Text(BadMc), FakeClaude.Text(GoodMc));
-        var r = await new DocumentExtractor(fake, Opts).ExtractAsync("MC text");
+        var r = await new DocumentExtractor(fake, Opts).ExtractAsync(Pdf);
         Assert.Equal(DocumentStatus.Valid, r.Status);
         Assert.Equal(2, r.Attempts);
         Assert.Equal(3, fake.Requests[1].Messages.Count); // document, Claude's answer, the error
@@ -36,7 +37,7 @@ public class DocumentExtractorTests
     public async Task Invalid_twice_goes_to_NeedsReview_and_stops()
     {
         var fake = new FakeClaude(FakeClaude.Text(BadMc), FakeClaude.Text(BadMc), FakeClaude.Text(GoodMc));
-        var r = await new DocumentExtractor(fake, Opts).ExtractAsync("MC text");
+        var r = await new DocumentExtractor(fake, Opts).ExtractAsync(Pdf);
         Assert.Equal(DocumentStatus.NeedsReview, r.Status);
         Assert.Equal(2, fake.Requests.Count);
         Assert.Contains(r.Problems, p => p.Contains("days"));
@@ -46,7 +47,7 @@ public class DocumentExtractorTests
     public async Task Not_json_goes_to_NeedsReview()
     {
         var fake = new FakeClaude(FakeClaude.Text("sorry"), FakeClaude.Text("still not json"));
-        var r = await new DocumentExtractor(fake, Opts).ExtractAsync("x");
+        var r = await new DocumentExtractor(fake, Opts).ExtractAsync(Pdf);
         Assert.Equal(DocumentStatus.NeedsReview, r.Status);
     }
 
@@ -54,7 +55,7 @@ public class DocumentExtractorTests
     public async Task Other_document_is_NeedsReview_without_retry()
     {
         var fake = new FakeClaude(FakeClaude.Text("""{"kind":"other","medical_certificate":null,"expense_claim":null}"""));
-        var r = await new DocumentExtractor(fake, Opts).ExtractAsync("memo");
+        var r = await new DocumentExtractor(fake, Opts).ExtractAsync(Pdf);
         Assert.Equal(DocumentStatus.NeedsReview, r.Status);
         Assert.Single(fake.Requests);
     }
@@ -62,9 +63,48 @@ public class DocumentExtractorTests
     [Fact]
     public async Task Valid_claim_passes()
     {
-        var r = await new DocumentExtractor(new FakeClaude(FakeClaude.Text(GoodClaim)), Opts).ExtractAsync("claim");
+        var r = await new DocumentExtractor(new FakeClaude(FakeClaude.Text(GoodClaim)), Opts).ExtractAsync(Pdf);
         Assert.Equal(DocumentStatus.Valid, r.Status);
         Assert.Equal(106.00m, r.Data!.ExpenseClaim!.Total);
+    }
+}
+
+public class DocumentPdfTests
+{
+    static readonly byte[] Pdf = "%PDF-1.4\n1 0 obj << /Type /Page >> endobj\n%%EOF"u8.ToArray();
+
+    [Fact]
+    public async Task The_pdf_goes_to_Claude_as_a_document_block_with_the_schema()
+    {
+        var fake = new FakeClaude(FakeClaude.Text("""{"kind":"other","medical_certificate":null,"expense_claim":null}"""));
+        await new DocumentExtractor(fake, new ClaudeOptions("claude-sonnet-5-5")).ExtractAsync(Pdf);
+        var first = FakeClaude.MessageJson(fake.Requests[0], 0).GetProperty("content")[0];
+        Assert.Equal("document", first.GetProperty("type").GetString());
+        Assert.Equal("application/pdf", first.GetProperty("source").GetProperty("media_type").GetString());
+        Assert.NotNull(fake.Requests[0].OutputConfig);
+    }
+
+    [Theory]
+    [InlineData("text/plain", "%PDF-1.4", "PDF files")]
+    [InlineData("application/pdf", "hello", "not a PDF")]
+    public void Not_a_pdf_is_refused(string type, string content, string why) =>
+        Assert.Contains(why, PdfUpload.Problem(type, System.Text.Encoding.ASCII.GetBytes(content)));
+
+    [Fact]
+    public void Too_many_pages_is_refused()
+    {
+        var six = "%PDF-1.4\n" + string.Concat(Enumerable.Repeat("<< /Type /Page >>\n", 6)) + "<< /Type /Pages >>";
+        Assert.Contains("pages", PdfUpload.Problem("application/pdf", System.Text.Encoding.ASCII.GetBytes(six)));
+        Assert.Null(PdfUpload.Problem("application/pdf", Pdf));
+    }
+
+    [Fact]
+    public void Every_sample_document_is_a_pdf_the_api_accepts()
+    {
+        var dir = Path.Combine(AppContext.BaseDirectory, "documents");
+        var files = Directory.GetFiles(dir, "*.pdf");
+        Assert.Equal(20, files.Length);
+        foreach (var f in files) Assert.Null(PdfUpload.Problem("application/pdf", File.ReadAllBytes(f)));
     }
 }
 

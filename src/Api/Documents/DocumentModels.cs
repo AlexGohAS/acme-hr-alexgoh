@@ -16,6 +16,17 @@ public class StoredDocument
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
+/// <summary>The original PDF, kept so HR can compare the data with it. An MC is medical data (POL-12):
+/// only the employee who sent it and HR may open it.</summary>
+public class StoredDocumentFile
+{
+    public int DocumentId { get; set; }
+    public byte[] Pdf { get; set; } = [];
+}
+
+/// <summary>A row on the HR Review page: the employee's name, and the time in UTC (ends in Z).</summary>
+public record DocumentRow(int Id, int EmployeeId, string EmployeeName, string FileName, string Kind, string ExtractedJson, DocumentStatus Status, string Problems, DateTimeOffset CreatedAt);
+
 public record MedicalCertificate(
     [property: JsonPropertyName("employee_name")] string EmployeeName,
     [property: JsonPropertyName("clinic")] string Clinic,
