@@ -5,9 +5,9 @@
 **Branch:** `git checkout lab2-start` (contains the finished Lab 1) · Solution: `lab3-start`. Prompts: [PROMPTS.md](../../PROMPTS.md#lab-2--hr-helpdesk-agent).
 
 ## Steps
-2.1 `git checkout lab2-start` and run `dotnet test`: 5 helpdesk tests fail. Read `src/Api/Helpdesk/HelpdeskAgent.cs` and `HelpdeskTools.cs`.
+2.1 Stop the API, `git checkout lab2-start` and run `dotnet test`: 5 helpdesk tests fail. The branch has the course solution of Lab 1, not your own code; commit your Lab 1 work on a branch of your own first if you want to keep it. Read `src/Api/Helpdesk/HelpdeskAgent.cs` and `HelpdeskTools.cs`.
 
-2.2 Paste **Finish the agent loop**. The loop resends a copy of the history, checks `StopReason`, returns one `tool_result` per `tool_use` (also when a tool throws) and stops at `MaxTurns`. The 4 tools: `get_leave_balance`, `apply_leave`, `check_policy`, `escalate_to_hr`. The rule lives in `apply_leave`: more than 3 working days returns `needs_manager_approval` and creates a Pending request.
+2.2 Keep the API stopped while Claude builds. Paste **Finish the agent loop**. The loop resends a copy of the history, checks `StopReason`, returns one `tool_result` per `tool_use` (also when a tool throws) and stops at `MaxTurns`. The 4 tools: `get_leave_balance`, `apply_leave`, `check_policy`, `escalate_to_hr`. The rule lives in `apply_leave`: more than 3 working days returns `needs_manager_approval` and creates a Pending request.
 
 2.3 Stop and restart the API (it reads `.env` at start), then paste **Run the tickets**. The runner picks a free week, so you can run it again; it rejects its Pending request at the end.
 

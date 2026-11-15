@@ -11,7 +11,7 @@
 - Cost: each Claude review is about US$0.20–0.55 (dry run: US$0.19, US$0.32, US$0.54).
 
 ## Steps
-5.1 Make `lab5-start` your `main`: `git checkout lab5-start` then `git push origin lab5-start:main --force` (your own repo only). `ci` runs on `main`.
+5.1 Make `lab5-start` your `main`: `git checkout lab5-start`, then `git push origin lab5-start:main --force` (your own repo only), then `git fetch origin` and `git checkout -B main origin/main` so your local `main` matches. `ci` runs on `main`.
 
 5.2 Render → **New** → **Blueprint** → your repo (or **Public Git Repository** with its GitHub URL; Render then says Auto-Deploy is not available, which is fine: the deploy hook deploys). **Blueprint Name:** `acme-hr`. It reads `render.yaml`: one free Docker service in Singapore. Fill the values yourself, never through Claude:
    - `DATABASE_URL`: `acme-hr-db` → Connect → **Internal** Database URL
@@ -20,7 +20,7 @@
 
    Click **Deploy Blueprint**. Your URL gets a random suffix, e.g. `acme-hr-z7ko.onrender.com`.
 
-5.3 Render → `acme-hr` service → **Settings** → **Deploy Hook**. Every service already has one; there is nothing to create. Copy it, and in your own terminal in the repo folder run `gh secret set RENDER_DEPLOY_HOOK` and `gh secret set ANTHROPIC_API_KEY`, pasting each value when asked. Treat the hook as a secret: if it leaks, click **Regenerate Hook**.
+5.3 Render → `acme-hr` service → **Settings** → **Deploy Hook**. Every service already has one; there is nothing to create. Copy it, and in your own terminal run `gh secret set RENDER_DEPLOY_HOOK -R <you>/<your-repo>` and `gh secret set ANTHROPIC_API_KEY -R <you>/<your-repo>`, pasting each value when asked. Name the repo with `-R`: without it `gh` picks the repo of the current folder, which may be another one. Check with `gh secret list -R <you>/<your-repo>`: both names must be listed before 5.4. Treat the hook as a secret: if it leaks, click **Regenerate Hook**.
 
 5.4 Paste **Open the pull request** (from `lab5-planted-bug` to `main`). `ci` passes, `claude-review` fails. The review is **one comment in the Conversation tab** (not on the lines in "Files changed"); each finding names file:line. The cost is in the comment footer and on the Actions run page.
 
@@ -30,23 +30,23 @@
    ```
    With `enforce_admins` false, you as the owner could still merge past the checks. That is on purpose for the workshop (it lets a trainer unblock you); don't use it.
 
-5.6 Check out `lab5-planted-bug`, copy the review comment, paste **Fix the planted bug** and replace the placeholder with the comment. You need one test each for Approved, Pending and Rejected. Push, and merge when both checks are green.
+5.6 Check out `lab5-planted-bug`, copy the review comment, paste **Fix the planted bug** and replace the placeholder with the comment. The review blocks on more than one thing; the prompt fixes all of them: tests for Approved, Pending and Rejected, a 403 test for another employee and a 404 test for an unknown id. Push (`git push -u origin lab5-planted-bug`), and merge when both checks are green. If the review blocks again, paste its new comment into the same prompt once more.
 
-5.7 Paste **Check the deploy**. A green run is not enough: the deploy step must print `{"deploy":{"id":"dep-..."}}`, and Render → `acme-hr` → **Events** shows a deploy with trigger `deploy_hook`. The first deploy takes a few minutes.
+5.7 Paste **Check the deploy**. A green run is not enough: the deploy step must print `{"deploy":{"id":"dep-..."}}`, and Render → `acme-hr` → **Events** shows a deploy with trigger `deploy_hook`. Look only for `dep-`: the log always shows the script text "RENDER_DEPLOY_HOOK not set", which means nothing. The first deploy takes a few minutes.
 
 5.8 Open `https://<your-service>.onrender.com` and sign in as Farah with your `SEED_USER_PASSWORD`.
 
-5.9 Clean up access: in `.env`, put `#` before `DATABASE_URL` so local work uses SQLite again and never writes into the live database. In Render, delete the `my laptop` IP rule (and any `0.0.0.0/0` rule) from `acme-hr-db`: the service uses the Internal URL.
+5.9 Clean up access: in `.env`, put `#` before `DATABASE_URL` so local work uses SQLite again and never writes into the live database. In Render, delete the `my laptop` IP rule (and any `0.0.0.0/0` rule) from `acme-hr-db`: the service uses the Internal URL. Removing the last rule asks you to type a confirmation to block all internet traffic: that is what you want.
 
 ## Done when
 - [ ] The review blocked the bad pull request
-- [ ] The fix includes tests for Approved, Pending and Rejected and is merged
+- [ ] The fix includes tests for Approved, Pending, Rejected, 403 and 404, and is merged
 - [ ] The deploy printed a `dep-` id and Render shows trigger `deploy_hook`
 - [ ] Acme HR is live: you signed in at `https://<your-service>.onrender.com` with your private password
 
 ## Stuck?
 - Can't require checks: the repo must be public on GitHub Free, and the checks appear only after they have run once (step 5.4).
-- `claude-review` fails in seconds with no comment: the `ANTHROPIC_API_KEY` secret is wrong. The run log says "key check failed". Set it again and re-run the failed job.
+- `claude-review` fails and there is no comment on the pull request: the `ANTHROPIC_API_KEY` secret is wrong or on another repo (`gh secret list -R <you>/<your-repo>`). The run log says "key check failed". Set it again and re-run the failed job. A correct review also fails in about 30 seconds: look for the comment, not the time.
 - Deploy is green but nothing changed on Render: `RENDER_DEPLOY_HOOK` is not set; the log says "skipping API deploy".
 - "Entirely different commit histories" on the PR: the sync script did not run in setup.
 - First page load takes about a minute: the free service sleeps after 15 minutes idle. Open `/health` to wake it.
