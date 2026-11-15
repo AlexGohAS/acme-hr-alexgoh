@@ -5,13 +5,13 @@
 **Branch:** `git checkout lab3-start` · Solution: `lab4-start`. Prompts: [PROMPTS.md](../../PROMPTS.md#lab-3--policy-research-agents).
 
 ## Steps
-3.1 `git checkout lab3-start` and run `dotnet test`: 2 research tests fail. Read `src/Api/Research/PolicyResearch.cs`.
+3.1 Stop the API, `git checkout lab3-start` and run `dotnet test`: 2 research tests fail. Read `src/Api/Research/PolicyResearch.cs`.
 
-3.2 Paste **Finish the worker**: its own conversation, only `search_policies` and `read_policy`, `MaxTurnsPerWorker`. A worker that stops early returns text starting with `Stopped:`, so the lead sees an error, not a normal result.
+3.2 Keep the API stopped while Claude builds. Paste **Finish the worker**: its own conversation, only `search_policies` and `read_policy`, `MaxTurnsPerWorker`. A worker that stops early returns text starting with `Stopped:`, so the lead sees an error, not a normal result.
 
-3.3 Check the limits in code: `MaxWorkers`, `MaxTurnsPerWorker`, `TokenBudget`.
+3.3 Check the limits in code: `MaxWorkers`, `MaxTurnsPerWorker`, `TokenBudget`. The lead's citations are checked in C#: if a sentence has no policy id, the code gives the lead one repair turn (`RepairRequest`).
 
-3.4 Restart the API, then paste **Ask a research question**. Then, in the web app as Farah, ask the same question on **Policies**.
+3.4 Start the API, then paste **Ask a research question**. Then, in the web app as Farah, ask the same question on **Policies** (the box is already filled in: just press Ask).
 
 ## Done when
 - [ ] Every claim cites a policy id (`citationsValid` true)
