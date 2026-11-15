@@ -42,7 +42,7 @@ public class HelpdeskAgent(IClaudeChat claude, HelpdeskTools tools, ClaudeOption
                 MaxTokens = 1024,
                 System = SystemPrompt.Replace("{today}", DateTime.UtcNow.ToString("yyyy-MM-dd (dddd)")),
                 Tools = HelpdeskTools.Definitions,
-                Messages = history,
+                Messages = history.ToList(),
             }, ct);
             inTok += res.Usage.InputTokens; outTok += res.Usage.OutputTokens;
 

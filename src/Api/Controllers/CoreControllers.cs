@@ -37,7 +37,8 @@ public class EmployeesController(AcmeDb db, LeaveService leave, AccessService ac
     }
 }
 
-public record NewLeave(DateOnly StartDate, DateOnly EndDate, HalfDay HalfDay = HalfDay.None, string Reason = "");
+/// <summary>Both dates are required: a missing date is 400, never 0001-01-01.</summary>
+public record NewLeave([System.ComponentModel.DataAnnotations.Required] DateOnly? StartDate, [System.ComponentModel.DataAnnotations.Required] DateOnly? EndDate, HalfDay HalfDay = HalfDay.None, string Reason = "");
 
 [ApiController, Route("leave")]
 public class LeaveController(LeaveService leave, AccessService access) : ControllerBase
@@ -57,7 +58,7 @@ public class LeaveController(LeaveService leave, AccessService access) : Control
     /// <summary>Leave for the signed-in employee. The body has no employeeId: who asks comes from the token.</summary>
     [HttpPost]
     public Task<IActionResult> Create(NewLeave body) =>
-        Run(() => leave.CreateAsync(new CreateLeave(User.EmployeeId(), body.StartDate, body.EndDate, body.HalfDay, body.Reason)));
+        Run(() => leave.CreateAsync(new CreateLeave(User.EmployeeId(), body.StartDate!.Value, body.EndDate!.Value, body.HalfDay, body.Reason)));
 
     [HttpPost("{id:int}/approve")]
     public Task<IActionResult> Approve(int id) => Decide(id, () => leave.ApproveAsync(id));
