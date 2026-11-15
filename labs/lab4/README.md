@@ -13,6 +13,7 @@
    - Paste **Create the database**. Approve the `create_postgres` call when Claude asks. Check it says plan `free`, region `singapore`.
    - When it is available: in the Render dashboard, `acme-hr-db` → Connect → copy the **External Database URL** into `.env` as `DATABASE_URL` yourself (Claude never handles it). Restart the API once: it creates and seeds the tables.
    - Paste **MCP question**.
+   - Paste **Check the guardrail**. The call must be blocked by a permission rule, not answered by Render. If Render answers, your deny rules do not match the tool names: tell a trainer.
 2. Run `./make-worktrees.sh` (or `.ps1`). Open two terminals:
    - `../acme-wt-calendar` → paste **Feature A** (leave calendar page)
    - `../acme-wt-holidays` → paste **Feature B** (public holidays endpoint)
@@ -24,6 +25,7 @@
 ## Done when
 - [ ] `acme-hr-db` created through MCP on the free plan, after you approved it
 - [ ] MCP answers from your live Render Postgres data, with a read-only query
+- [ ] A Render write was blocked by a permission rule
 - [ ] Both features merged with tests
 - [ ] Release notes follow the Skill's format
 
