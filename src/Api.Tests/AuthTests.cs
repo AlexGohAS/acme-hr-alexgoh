@@ -111,12 +111,19 @@ public class AccessServiceTests
     }
 }
 
-/// <summary>A real API over HTTP with its own throwaway SQLite file.</summary>
+/// <summary>A real API over HTTP with its own throwaway SQLite file. It never reads .env, so tests
+/// cannot reach your Render database (DATABASE_URL) or spend your API key.</summary>
 public class ApiFactory : WebApplicationFactory<Program>
 {
+    static ApiFactory() => Environment.SetEnvironmentVariable(Api.DotEnv.SkipVariable, "1");
+
     readonly string _file = Path.Combine(Path.GetTempPath(), $"acme-test-{Guid.NewGuid():N}.db");
-    protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) =>
+    public string DbFile => _file;
+    protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
+    {
         builder.UseSetting("SQLITE_PATH", $"Data Source={_file}");
+        builder.UseSetting("DATABASE_URL", "");
+    }
     public bool UsesOwnFile => File.Exists(_file);
 
     public async Task<HttpClient> SignedInAs(string email)

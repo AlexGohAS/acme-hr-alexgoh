@@ -27,12 +27,20 @@ public static class Seed
             });
         }
         db.Employees.AddRange(employees);
+        // Dates are this year, but always on the same weekdays, so the day counts never change:
+        // Mon-Wed (3 days), a Friday half day (0.5), Mon-Fri (5 days).
         var year = DateTime.UtcNow.Year;
+        var trip = MondayOnOrAfter(new DateOnly(year, 3, 2));
+        var clinic = MondayOnOrAfter(new DateOnly(year, 4, 6)).AddDays(4);
+        var holiday = MondayOnOrAfter(new DateOnly(year, 5, 18));
         db.LeaveRequests.AddRange(
-            new LeaveRequest { EmployeeId = 6, StartDate = new(year, 3, 2), EndDate = new(year, 3, 4), Status = LeaveStatus.Approved, Reason = "Family trip" },
-            new LeaveRequest { EmployeeId = 7, StartDate = new(year, 4, 10), EndDate = new(year, 4, 10), HalfDay = HalfDay.AM, Status = LeaveStatus.Approved, Reason = "Clinic" },
-            new LeaveRequest { EmployeeId = 8, StartDate = new(year, 5, 18), EndDate = new(year, 5, 22), Status = LeaveStatus.Pending, Reason = "Holiday" });
+            new LeaveRequest { EmployeeId = 6, StartDate = trip, EndDate = trip.AddDays(2), Status = LeaveStatus.Approved, Reason = "Family trip" },
+            new LeaveRequest { EmployeeId = 7, StartDate = clinic, EndDate = clinic, HalfDay = HalfDay.AM, Status = LeaveStatus.Approved, Reason = "Clinic" },
+            new LeaveRequest { EmployeeId = 8, StartDate = holiday, EndDate = holiday.AddDays(4), Status = LeaveStatus.Pending, Reason = "Holiday" });
         db.Policies.AddRange(PolicyDocs.All);
         db.SaveChanges();
     }
+
+    /// <summary>The first Monday on or after the date.</summary>
+    public static DateOnly MondayOnOrAfter(DateOnly d) => d.AddDays(((int)DayOfWeek.Monday - (int)d.DayOfWeek + 7) % 7);
 }
