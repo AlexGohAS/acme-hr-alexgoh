@@ -4,6 +4,10 @@
 # commit histories". This replaces your branches with the template's real history.
 # Run it before you change anything. Your .env is not touched.
 $ErrorActionPreference = 'Stop'
+if (git status --porcelain) {
+  Write-Host "Stopped: you have uncommitted changes (see git status). Commit or stash them first. Nothing was changed." -ForegroundColor Red
+  exit 1
+}
 $template = 'https://github.com/anchor-academy/acme-hr-workshop-net.git'
 $branches = 'main','lab1-start','lab2-start','lab3-start','lab4-start','lab5-start','lab5-planted-bug','lab6-start','final'
 git remote get-url template 2>$null | Out-Null
