@@ -6,9 +6,9 @@
 
 ## Steps
 0. Make `lab5-start` your `main`: `git checkout lab5-start && git push origin lab5-start:main --force` (your own team repo only).
-1. GitHub → Settings → Secrets and variables → Actions: add `ANTHROPIC_API_KEY` and `RENDER_DEPLOY_HOOK`.
+1. GitHub → Settings → Secrets and variables → Actions: add `ANTHROPIC_API_KEY` (or run `gh secret set ANTHROPIC_API_KEY` in the repo folder and paste it when asked).
 2. Render: New → **Blueprint** → your repo (it reads `render.yaml`: one free Docker service that runs the API and serves the web app at `/app`). When asked, set `DATABASE_URL` to your Lab 4 Postgres **Internal Database URL** and `ANTHROPIC_API_KEY`.
-3. Render → your `acme-hr` service → Settings → **Deploy Hook**: copy the URL into the GitHub secret `RENDER_DEPLOY_HOOK`.
+3. Render → your `acme-hr` service → **Settings** → **Deploy Hook**. Every service already has one; there is nothing to create. Copy the URL into a new GitHub secret `RENDER_DEPLOY_HOOK` (`gh secret set RENDER_DEPLOY_HOOK`). Treat it as a secret: anyone with it can deploy. If it leaks, click **Regenerate Hook**.
 4. GitHub → Settings → Branches: protect `main`, require the checks **ci** and **claude-review** (they appear after the first run).
 5. Open a pull request from `lab5-planted-bug` to `main`. Watch `ci` pass and `claude-review` fail. Read the review comment and the cost in the job summary.
 6. Fix it locally: check out `lab5-planted-bug`, copy the review comment from the pull request, paste **Fix the planted bug** and replace the placeholder with the comment. Push, merge when both checks are green. Watch the deploy job call Render. The first deploy takes a few minutes; then open `https://<your-service>.onrender.com` and sign in.
