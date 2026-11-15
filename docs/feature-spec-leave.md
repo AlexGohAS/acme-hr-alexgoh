@@ -19,4 +19,5 @@
 
 ## Also
 - Fix the known bug: leave spanning a weekend counts Saturday and Sunday (see the failing test).
-- Web: the Leave page shows status and lets the user create a request.
+- API: each leave request in responses includes `days`, its working days (0.5 for a half day).
+- Web: the Leave page shows the number of days, the status, and lets the user create a request.
